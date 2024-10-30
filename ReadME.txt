@@ -107,15 +107,19 @@ Minimalna verzia cmake: 3.10
 ####################
  Existuju tri sposoby kompilacie: pomocou CMake, Make alebo prikazu GCC.
  
- #CMAKE# 
- 1)V adresare build(tam sa ulozia subory potrebne pre kompilaciu)
-  otvorte prikazovy riadok. 
- 2)Zadajte prikaz: cmake .. 
- 3)Po uspesnom vygenerovani build-suborov pouzite prikaz:
-  Windows: "cmake --build ." , Linux: "make" 
- 4)Po uspesnom vykonani prikazu sa vytvori adresar "Execute`s",
- kde budu ulozene server.exe a client.exe. 
- 5)Najprv spustite server a potom klienta.
+  #CMAKE# 
+      1)V adresare build(tam sa ulozia subory potrebne pre kompilaciu)
+       otvorte prikazovy riadok. 
+
+      2)Zadajte prikaz: cmake .. 
+
+      3)Po uspesnom vygenerovani build-suborov pouzite prikaz:
+       Windows: "cmake --build ." , Linux: "make" 
+
+      4)Po uspesnom vykonani prikazu sa vytvori adresar "Execute`s",
+      kde budu ulozene server.exe a client.exe. 
+
+      5)Najprv spustite server a potom klienta.
 
  !!!!!Problem Linux!!!!! 
   Ked sa vam vypise chybova hlaska:
@@ -128,27 +132,33 @@ Minimalna verzia cmake: 3.10
  #####
 
  #MAKE# 
- 1)V adresare projektu otvorte prikazovy riadok. 
- 2)Zadajte prikaz:
-  make
- 3)Po uspesnom vykonani prikazu sa vytvoria spustitelne subory: server.exe a
-  client.exe. 
- 4)Najprv spustite server a potom klienta.
+      1)V adresare projektu otvorte prikazovy riadok. 
+
+      2)Zadajte prikaz:
+      make
+
+      3)Po uspesnom vykonani prikazu sa vytvoria spustitelne subory: server.exe a
+      client.exe. 
+
+      4)Najprv spustite server a potom klienta.
  #####
 
  #GCC prikaz# 
- 1)V adresare projektu otvorte prikazovy riadok. 
- 2)Zadajte prikazy:
-  #Windows: 
-  gcc -Wall -Wextra -o server.exe server.c monocypher.c shared.c -lws2_32 -lm
-  gcc -Wall -Wextra -o client.exe client.c monocypher.c shared.c -lws2_32 -lm
+      1)V adresare projektu otvorte prikazovy riadok.
 
-  #Linux: 
-  gcc -Wextra -Wall server.c monocypher.c -o server -lbsd -lm
-  gcc -Wextra -Wall client.c monocypher.c -o client -lbsd -lm 
-  3)Po uspesnom vykonani prikazov sa vytvoria spustitelne subory: server.exe a 
-  client.exe.
-  4)Najprv spustite server a potom klienta.
+      2)Zadajte prikazy:
+      #Windows: 
+      gcc -Wall -Wextra -o server.exe server.c monocypher.c shared.c -lws2_32 -lm
+      gcc -Wall -Wextra -o client.exe client.c monocypher.c shared.c -lws2_32 -lm
+
+      #Linux: 
+      gcc -Wextra -Wall server.c monocypher.c -o server -lbsd -lm
+      gcc -Wextra -Wall client.c monocypher.c -o client -lbsd -lm 
+
+      3)Po uspesnom vykonani prikazov sa vytvoria spustitelne subory: server.exe a 
+      client.exe.
+      
+      4)Najprv spustite server a potom klienta.
 
  ################
  !!!!!
