@@ -1,4 +1,4 @@
-# Client_server_hidden
+# Client_server_hidden#
 Program pre sifrovanu komunikaciu klient-server so steganografickou podporou
 (Elligator 2 a PADME)
 --------------------------------------------------------------------------------
