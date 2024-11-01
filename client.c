@@ -47,7 +47,7 @@ Version 0.1 - basic functionality;
 
 
 #define MAX 400    //message size, can be changed at your preference
-
+//This size means amount of characters that will be readed from stdin to send it
 #define KEYSZ 32   //SK, PK, Hidden PK sizes
 #define NONSZ 24   //Nonce size
 #define IP "127.0.0.1" //Ip address of the server
@@ -56,7 +56,11 @@ Changing this sizes can and will create security risks or program instability!
 If you need different key or nonce sizes, pls read whole code before
 and consider using different functions from Monocypher
 */
-#define PORT 8087 // port number
+
+#define PORT 8087 // port number(modify on both sides!)
+#define EXIT "exit" // stop word, if someone use it in conversation, it will end
+
+#define CLIENT 1 //Macro for KDF (do not change this macro for this side) 
 #define SA struct sockaddr
 
 
@@ -67,48 +71,27 @@ and consider using different functions from Monocypher
 /*
 This function purpose is to open sockets for WIN and LIN OS
 */
-int sockct_opn(){
+int sockct_opn(int port, char *ip){
     int sockfd;
     struct sockaddr_in servaddr;
-        #ifdef _WIN32
-            WSADATA wsaData;
-            int iResult;
-            iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-            if (iResult != 0) {
-                printf("WSAStartup failed: %d\n", iResult);
-                exit(1);
-            }
-        #endif
+    init_sock();
 
     // Socket creation and verification
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd == -1) {
-        printf("Socket creation failed...\n");
-            #ifdef _WIN32
-                WSACleanup();
-            #endif
-        exit(2);
-    } else {
-        printf("Socket successfully created..\n");
-    }
+    sock_check(sockfd);
 
     memset(&servaddr, 0, sizeof(servaddr));
-
     // Assign IP, PORT
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr(IP);	//loopback IP
-    servaddr.sin_port = htons(PORT);
+    if(ip == NULL)servaddr.sin_addr.s_addr = inet_addr(IP); //checking if user entered custom ip
+    else servaddr.sin_addr.s_addr = inet_addr(ip);
+    if(port == 0)servaddr.sin_port = htons(PORT); //checking if user entered custom port
+    else servaddr.sin_port = htons(port);
 
     // Connect the client socket to the server socket
     if (connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) != 0) {
-        printf("Connection with the server failed...\n");
-            #ifdef _WIN32
-                closesocket(sockfd);
-                WSACleanup();
-            #else
-                close(sockfd);
-            #endif
-        exit(10);
+        sockct_cls(sockfd);
+        exit_with_error(ERROR_SOCKET_CREATION, "Connection with the server failed");
     } else {
         printf("Connected to the server..\n");
     }
@@ -150,15 +133,13 @@ void chat(uint8_t* secret,int sockfd){
         // Recieve message to send
         printf("To server: ");
         if (fgets(plain, sizeof(plain), stdin) == NULL) {
-            printf("Error reading input. Program is stopped!");
-            exit(6);
+            exit_with_error(ERROR_GETTING_INPUT, "Error reading input");
         }
         // Buffer overflow, clear stdin
         if (plain[strlen(plain) - 1] != '\n') {
             printf("Your message was too long, boundaries is: %d symbols, only those will be sent.\n",MAX);
             clear();
             plain[strlen(plain) - 1] = '\n';
-            plain[MAX - 1] = '\0';
         }
 
         // Send block counter
@@ -171,15 +152,14 @@ void chat(uint8_t* secret,int sockfd){
 
         write_win_lin(sockfd, (uint8_t*)buff, sizeof(buff));
 
-		if (strncmp(plain, "exit", 4) == 0) {
+		if (strncmp(plain,EXIT, 4) == 0) {
             printf("Client Exit...\n");
             break;
         }
 
         // Clear the buffer and receive the response
-        memset(buff, 0, sizeof(buff));
+        memset(buff, 0, MAX);
         crypto_wipe(plain, MAX);// clear plain
-
 
         read_win_lin(sockfd, (uint8_t*)&blkcnt_them, sizeof(blkcnt_them));
         read_win_lin(sockfd, (uint8_t*)buff, sizeof(buff));
@@ -187,14 +167,14 @@ void chat(uint8_t* secret,int sockfd){
         // Decrypt the message from the server
         crypto_chacha20_x((uint8_t*)plain, (uint8_t*)buff, sizeof(buff), secret, nonce_thm, blkcnt_them);
 
-        // Print the server's response
+        //inserting terminator at the actual end of string to avoid showing another garbage
         for(int j = 0; j < MAX; j++) {
             if(plain[j] == '\n' && j != MAX-1) plain[j+1] = '\0';
         }
         printf("    From Server: %s", plain);
 
         // Exit the loop if the message is "exit"
-        if (strncmp(plain, "exit", 4) == 0) {
+        if (strncmp(plain,EXIT, 4) == 0) {
             printf("Client Exit...\n");
             break;
         }
@@ -215,9 +195,7 @@ void key_exc_ell(int sockfd) {
     uint8_t your_sk[KEYSZ]; //your secret key
     uint8_t your_pk[KEYSZ]; //your private key
     uint8_t their_pk[KEYSZ]; //their private key
-    uint8_t shared_secret[KEYSZ]; 
-    uint8_t shared_keys[KEYSZ]; //shared key material
-    uint8_t tweak; // Elligator`s tweak
+    uint8_t shared_key[KEYSZ]; //shared key material
     uint8_t hidden[KEYSZ]; //your PK hiddent with inverse mapping
 
     // Computing size of padded hidden PK and creating variable
@@ -225,15 +203,8 @@ void key_exc_ell(int sockfd) {
     uint8_t pad_your_pk[pad_size]; //your padded hidden PK
     uint8_t pad_hidden[pad_size]; //their padded hidden PK
 
-    // Tweak for elligator`s inverse map
-    random_num(&tweak, 1);
-    // Inverse mapping(mapping Curve point to a scalar)
-    while(1) {
-        random_num(your_sk, KEYSZ);
-        crypto_x25519_dirty_small(your_pk, your_sk);
-        if (crypto_elligator_rev(your_pk, your_pk, tweak) == 0)
-            break;
-    }
+    //generate SK and hidden PK
+    key_hidden(your_sk, your_pk, KEYSZ);
 
     // Padding of hidden PK
     pad_array(your_pk, pad_your_pk,sizeof(your_pk), pad_size);
@@ -249,29 +220,14 @@ void key_exc_ell(int sockfd) {
     unpad_array(hidden, pad_hidden,sizeof(hidden));
     crypto_elligator_map(their_pk, hidden);
 
+
     // Compute the shared secret
-    crypto_x25519(shared_secret, your_sk, their_pk);
+    kdf(shared_key, your_sk, their_pk, KEYSZ, CLIENT);
+    
 
-    // Computing PK without inverse mapping 4 KDF
-    crypto_x25519_dirty_small(your_pk, your_sk);
-    // Derive shared keys(KDF with Blake2)
-    crypto_blake2b_ctx ctx;
-    crypto_blake2b_init(&ctx, KEYSZ);
-    crypto_blake2b_update(&ctx, shared_secret, KEYSZ);
-    crypto_blake2b_update(&ctx, your_pk, KEYSZ);
-    crypto_blake2b_update(&ctx, their_pk, KEYSZ);
-    crypto_blake2b_final(&ctx, shared_keys);
+    chat(shared_key,sockfd);
 
-    // Shared key for encryption
-    uint8_t *key_1 = shared_keys;
-
-    //Calling function for encrypted communication
-
-    chat(key_1,sockfd);
-
-    // Clean up
-    crypto_wipe(shared_secret, KEYSZ);
-    crypto_wipe(shared_keys, KEYSZ);
+    crypto_wipe(shared_key, KEYSZ);
 }
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -281,20 +237,20 @@ void key_exc_ell(int sockfd) {
 /// Main for socket creation ///
 ///////////////////////////////////
 int main(int argc, char *argv[]) {
+    int port = 0; 
+    char *ip = NULL;
     /*arguments in main providing user to change default IP of server(loopback) and port*/
     if (argc >= 2) {//checking if arguments exsist
-        if(argv[1][0] != '\0'){ // IP argument is not empty
-        #undef IP
-        #define IP argv[1] //redefining macro to users ip
+        if(argv[1][0] != '\0'){ // Port argument is not empty
+            port =  atoi(argv[1]); //redefining var to users port
         }
-        if(argv[2][0] != '\0'){ // Port argument is not empty
-        #undef PORT
-        #define PORT atoi(argv[2]) //redefining macro to users port
-        } 
+        if(argc == 3 && argv[2][0] != '\0'){ // IP argument is not empty
+            ip = calloc(strlen(argv[2])+1, sizeof(char)); // copy input val to dynamic array
+            strcpy(ip,argv[2]);
+        }
     }
-
-    int sockfd = sockct_opn();
-    
+    int sockfd = sockct_opn(port,ip);
+    if(ip != NULL)free(ip); // free mem after ip
     key_exc_ell(sockfd);
 
     sockct_cls(sockfd);

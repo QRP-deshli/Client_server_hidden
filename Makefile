@@ -5,7 +5,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra
 
 # Source files
-SOURCES = server.c client.c monocypher.c shared.c random.c
+SOURCES = server.c client.c monocypher.c shared.c random.c config.c
 
 # Output binary names
 BINS = server client
@@ -15,7 +15,7 @@ ifeq ($(OS), Windows_NT)
 	LIBS = -lws2_32 -lm
 	EXE_EXT = .exe
 else
-	LIBS = -lm -lbsd -pthread
+	LIBS = -lm -lbsd 
 	EXE_EXT = 
 endif
 
@@ -24,7 +24,7 @@ all: $(BINS)
 
 # Build each binary
 $(BINS): %: %.c shared.c
-	$(CC) $(CFLAGS) -o $@$(EXE_EXT) $< shared.c random.c monocypher.c $(LIBS)
+	$(CC) $(CFLAGS) -o $@$(EXE_EXT) $< shared.c random.c monocypher.c config.c $(LIBS)
 
 # Clean up build artifacts
 clean:

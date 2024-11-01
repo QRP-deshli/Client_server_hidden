@@ -15,6 +15,7 @@ set(MONOCRYPT_SRC
     ../monocypher.c  # Path to the Monocypher source file
     ../shared.c
     ../random.c
+    ../config.c
 )
 
 # Set output directory for executables

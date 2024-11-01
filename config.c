@@ -1,29 +1,21 @@
-#include"shared.h"
-
+#include"error.h"
+#define OUT 1 //prints to stdout, set to 0 to print to stderr
+//Also you can switch it to antoher and it will not print at all
 
 //////////////////////////////////////////
-/// Random numbers generator ///
+/// Error printing ///
 //////////////////////////////////////////
 /*
-This function purpose is to generate random bits and fill received array with them.
-This function works for Win and Lin.
+This function purpose is to print errors in main code`s
+You can choose where to print error stderr or stdout by switching 
+macro OUT.
 */
-void random_num(uint8_t * number, int size){
-        #ifdef _WIN32
-            unsigned int temp;
-            for(int i = 0;i<size;i++){
-                if (rand_s(&temp) != 0) {
-                printf("Number generation failed\n");
-                exit(9);
-                }
-                number[i] = (uint8_t)temp;
-            }  
-        #else
-            arc4random_buf(number, size);
-            if (number == NULL) {
-                printf("Number generation failed\n");
-                exit(9);
-            }
-        #endif
-
+void exit_with_error(int error, char * err_string){
+        if(OUT == 0){
+            fprintf(stderr, "%s.\n", err_string);
+        }
+        else if(OUT == 1){
+            fprintf(stdout, "%s.\n", err_string); 
+        }
+        exit(error);
 }

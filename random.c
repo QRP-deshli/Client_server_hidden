@@ -13,16 +13,14 @@ void random_num(uint8_t * number, int size){
             unsigned int temp;
             for(int i = 0;i<size;i++){
                 if (rand_s(&temp) != 0) {
-                printf("Number generation failed\n");
-                exit(9);
+                exit_with_error(ERROR_GENERATING_RANDOM, "Number generation failed");
                 }
                 number[i] = (uint8_t)temp;
             }  
         #else
             arc4random_buf(number, size);
             if (number == NULL) {
-                printf("Number generation failed\n");
-                exit(9);
+                exit_with_error(ERROR_GENERATING_RANDOM, "Number generation failed");
             }
         #endif
 

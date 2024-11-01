@@ -109,7 +109,6 @@ Minimalna verzia cmake: 3.10
  Existuju tri sposoby kompilacie: pomocou CMake, Make alebo prikazu GCC.
  
  #CMAKE# 
-
       1)V adresare build(tam sa ulozia subory potrebne pre kompilaciu)
        otvorte prikazovy riadok. 
 
@@ -134,7 +133,6 @@ Minimalna verzia cmake: 3.10
  #####
 
  #MAKE# 
-
       1)V adresare projektu otvorte prikazovy riadok. 
 
       2)Zadajte prikaz:
@@ -147,7 +145,6 @@ Minimalna verzia cmake: 3.10
  #####
 
  #GCC prikaz# 
-
       1)V adresare projektu otvorte prikazovy riadok.
 
       2)Zadajte prikazy:

@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include "monocypher.h"
 #ifdef _WIN32
     #define _CRT_RAND_S //rand_S
     #include <winsock2.h>   //socket
@@ -21,6 +22,9 @@
     #include <unistd.h>
     #include <bsd/stdlib.h>
 #endif
+
+
+#include "error.h" //all errors defined + function proto
 //////////////////////////////////////////
 /// Clearing input   ///
 //////////////////////////////////////////
@@ -78,5 +82,50 @@ void sockct_cls(int sockfd);
 ///////////////////////////////////////////////////
 ///////////////////////////////////////////////////
 
+///////////////////////////////
+/// Socket initializer///
+//////////////////////////////
+/*
+This function purpose is to initialize socket for windows
+*/
+void init_sock();
+//////////////////////////////
+//////////////////////////////
+
+///////////////////////////////
+/// Socket creation checker///
+//////////////////////////////
+/*
+This function purpose is to initialize socket for windows
+*/
+void sock_check(int sockfd);
+//////////////////////////////
+//////////////////////////////
+
+
+///////////////////////////////
+/// KDF with Blake2b///
+//////////////////////////////
+/*
+This function purpose is derive shared key from 
+raw shared key and PKs of both sides
+*/
+void kdf(uint8_t *shared_key, uint8_t *your_sk, uint8_t *their_pk, int keysz, int side);
+///////////////////////////////
+///////////////////////////////
+
+
+/////////////////////////////////////////
+/// Function for generating hidden PKs///
+/////////////////////////////////////////
+/*This function takes two empty arrays for keys
+generates tweak for Elligator, next in infinite cycle
+it generates SK and derives PK from it. If that PK
+can be mapped to a random string with Elligator 2 cycle ends,
+ if not it continues and new SKs and PKs are generated
+ */
+void key_hidden(uint8_t *your_sk, uint8_t *your_pk, int keysz);
+/////////////////////////////////////////
+/////////////////////////////////////////
 
 #endif
