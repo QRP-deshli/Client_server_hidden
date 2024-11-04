@@ -195,3 +195,6 @@ Minimalna verzia cmake: 3.10
   10 - chyba: klientovi sa nepodarilo pripojit ku serveru.  
 
  ################
+# Zdroje #
+https://elligator.org/
+https://monocypher.org/

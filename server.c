@@ -23,6 +23,12 @@ This code is server side,
 !REMEMBER! SERVER MUST BE RUNNED FIRST!
 */
 
+/*
+Links:
+https://elligator.org/
+https://monocypher.org/
+*/
+
 //////////Version history//////////
 /*
 Version 0.4 : 
