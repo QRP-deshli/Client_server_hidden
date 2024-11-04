@@ -2,7 +2,7 @@
 Program pre sifrovanu komunikaciu klient-server so steganografickou podporou
 (Elligator 2 a PADME)
 --------------------------------------------------------------------------------
-2024-10-30, v.1.0.3, Nikita Kuropatkin KEMT FEI TUKE
+2024-11-04, v.1.0.4, Nikita Kuropatkin KEMT FEI TUKE
 
 Zakladny ciel programu:
 ---------------------------
