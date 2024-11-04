@@ -1,7 +1,8 @@
+# Client_server_hidden#
 Program pre sifrovanu komunikaciu klient-server so steganografickou podporou
 (Elligator 2 a PADME)
 --------------------------------------------------------------------------------
-2024-10-22, v.1.0.3, Nikita Kuropatkin KEMT FEI TUKE
+2024-10-30, v.1.0.3, Nikita Kuropatkin KEMT FEI TUKE
 
 Zakladny ciel programu:
 ---------------------------
@@ -107,7 +108,8 @@ Minimalna verzia cmake: 3.10
 ####################
  Existuju tri sposoby kompilacie: pomocou CMake, Make alebo prikazu GCC.
  
-  #CMAKE# 
+ #CMAKE# 
+
       1)V adresare build(tam sa ulozia subory potrebne pre kompilaciu)
        otvorte prikazovy riadok. 
 
@@ -132,6 +134,7 @@ Minimalna verzia cmake: 3.10
  #####
 
  #MAKE# 
+
       1)V adresare projektu otvorte prikazovy riadok. 
 
       2)Zadajte prikaz:
@@ -144,6 +147,7 @@ Minimalna verzia cmake: 3.10
  #####
 
  #GCC prikaz# 
+
       1)V adresare projektu otvorte prikazovy riadok.
 
       2)Zadajte prikazy:
@@ -161,11 +165,22 @@ Minimalna verzia cmake: 3.10
       4)Najprv spustite server a potom klienta.
 
  ################
- !!!!!
-!!!!
-IP A PORT SA DAJU ZADAT CEZ ARGUMENTY SERVERA A CLIENTA
-!!!!
-!!!!!
+ Moznosti nastavenia parametrov:
+ -------------------------------
+ # Cislo portu #
+ Pouzivatel moze zmenit predvolene cislo portu (8087) zadanim noveho cisla
+ ako druheho argumentu pri spusteni programu:
+ ./server.exe 8999
+ ./client.exe 8999
+ (cislo musi byt rovnake na oboch stranach)
+ 
+ # IP adresa servera #
+ Pouzivatel ma tiez moznost zmenit predvolenu adresu servera pre klientsku stranu.
+ Predvolena adresa je nastavena ako loopback adresa (127.0.0.1).
+ Adresu je mozne zmenit zadanim ako tretieho argumentu pri spusteni client.exe:
+ ./server.exe 8999
+ ./client.exe 8999 192.134.11.22
+
  # Chybove kody
   0 - program bol normalne ukonceny (ziadna chyba sa nevyskytla).  
   1 - chyba: nepodarilo sa spustit WSA.  
