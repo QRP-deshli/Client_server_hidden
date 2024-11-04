@@ -25,6 +25,14 @@ This code is server side,
 
 //////////Version history//////////
 /*
+Version 0.4 : 
+# Added posibility to change default port and IP of server, while running program
+# All functions for compatibility with different OSs are contained in shared.c now
+# Added comments more comments and Macros
+# Added functions kdf() and key_hidden(), also additional macros for them ,
+kdf() - key derivation with blake2b; key_hidden() for masking Public keys
+# Added new logic for printing errors, check config.c and error.h for further explanation
+# Corrected mistake with shared key
 Version 0.3 : 
 # Migration of shared functions to shared.c;
 # Correction of macros;
