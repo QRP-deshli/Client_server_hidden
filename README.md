@@ -181,7 +181,7 @@ Minimalna verzia cmake: 3.10
  ./server.exe 8999
  ./client.exe 8999 192.134.11.22
 
- # Chybove kody
+ # Chybove kody #
   0 - program bol normalne ukonceny (ziadna chyba sa nevyskytla).  
   1 - chyba: nepodarilo sa spustit WSA.  
   2 - chyba: nepodarilo sa vytvorit socket.  
