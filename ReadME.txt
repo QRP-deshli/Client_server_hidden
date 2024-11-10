@@ -2,7 +2,7 @@
 Program pre sifrovanu komunikaciu klient-server so steganografickou podporou
 (Elligator 2 a PADME)
 --------------------------------------------------------------------------------
-2024-11-04, v.1.0.3, Nikita Kuropatkin KEMT FEI TUKE
+2024-11-10, v.1.0.5, Nikita Kuropatkin KEMT FEI TUKE
 
 Zakladny ciel programu:
 ---------------------------
@@ -143,25 +143,6 @@ Minimalna verzia cmake: 3.10
       3)Po uspesnom vykonani prikazu sa vytvoria spustitelne subory: server.exe a
       client.exe. 
 
-      4)Najprv spustite server a potom klienta.
- #####
-
- #GCC prikaz# 
-
-      1)V adresare projektu otvorte prikazovy riadok.
-
-      2)Zadajte prikazy:
-      #Windows: 
-      gcc -Wall -Wextra -o server.exe server.c monocypher.c shared.c -lws2_32 -lm
-      gcc -Wall -Wextra -o client.exe client.c monocypher.c shared.c -lws2_32 -lm
-
-      #Linux: 
-      gcc -Wextra -Wall server.c monocypher.c -o server -lbsd -lm
-      gcc -Wextra -Wall client.c monocypher.c -o client -lbsd -lm 
-
-      3)Po uspesnom vykonani prikazov sa vytvoria spustitelne subory: server.exe a 
-      client.exe.
-      
       4)Najprv spustite server a potom klienta.
 
  ################
