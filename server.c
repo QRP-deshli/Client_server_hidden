@@ -1,9 +1,9 @@
 // Client-server api              //
-// Server side                    //
-// Version 0.2                    //
+// Client side                    //
+// Version 0.5                    //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 01.09.2024                     //
+// 10.11.2024                     //
 // Nikita Kuropatkin              //
 /*
 This code provides encrypted client-server communication in form of chat.
@@ -58,8 +58,12 @@ Version 0.1 - basic functionality;
 #include <stdlib.h>
 #include <math.h>
 #include "monocypher.h"
-#include "shared.h"
+#include "network.h"
+#include "addition.h"
+#include "random.h"
+#include "crypto.h"
 #include "error.h"
+
 #define MAX 400     //message size, can be changed at your preference
 //This size means amount of characters that will be readed from stdin to send it
 #define KEYSZ 32   //SK, PK, Hidden PK sizes
@@ -74,11 +78,6 @@ and consider using different functions from Monocypher
 
 
 #define SA struct sockaddr
-#ifdef _WIN32// defining macro for address length(using different types in WIN and LINUX)
-    #define LEN int 
-#else
-    #define LEN socklen_t
-#endif 
 #define SERVER 0 //Macro for KDF (do not change this macro for this side) 
 
 //////////////////////////////////////////
@@ -187,12 +186,7 @@ void chat(uint8_t* secret,int sockfd)
         // Print decrypted message
         printf("    From client: %s", plain);
 
-
-        // Check for exit command
-        if (strncmp(EXIT, plain, 4) == 0) {
-            printf("Server Exit...\n");
-            break;
-        }
+        if(exiting("Client", plain) == 1)break; //checks for stop-word
 
         // Clear buffers
         memset(buff, 0, MAX);
@@ -220,10 +214,8 @@ void chat(uint8_t* secret,int sockfd)
         write_win_lin(sockfd, (uint8_t*)buff, sizeof(buff));
 
         // Check for exit command (again, to exit the loop)
-        if (strncmp(EXIT, plain, 4) == 0) {
-            printf("Server Exit...\n");
-            break;
-        }
+        if(exiting("Server", plain) == 1)break; //checks for stop-word
+
         crypto_wipe(plain, MAX);// clear plain
     }
 
@@ -289,6 +281,7 @@ int main(int argc, char *argv[]) {
     key_exc_ell(connfd);
 
     sockct_cls(sockfd);
-
+    printf("Program ended, press Enter:");
+    getchar();
     return 0;
 }

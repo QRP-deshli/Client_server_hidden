@@ -1,9 +1,9 @@
 // Client-server api              //
 // Client side                    //
-// Version 0.4                    //
+// Version 0.5                    //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 01.09.2024                     //
+// 10.11.2024                     //
 // Nikita Kuropatkin              //
 /*
 This code provides encrypted client-server communication in form of chat.
@@ -57,8 +57,10 @@ Version 0.1 - basic functionality;
 #include <string.h>
 #include <stdlib.h>
 #include "monocypher.h"
-#include "shared.h"
-
+#include "network.h"
+#include "addition.h"
+#include "random.h"
+#include "crypto.h"
 
 #define MAX 400    //message size, can be changed at your preference
 //This size means amount of characters that will be readed from stdin to send it
@@ -72,12 +74,9 @@ and consider using different functions from Monocypher
 */
 
 #define PORT 8087 // port number(modify on both sides!)
-#define EXIT "exit" // stop word, if someone use it in conversation, it will end
 
 #define CLIENT 1 //Macro for KDF (do not change this macro for this side) 
 #define SA struct sockaddr
-
-
 
 //////////////////////////////////////////
 /// Socket opener ///
@@ -166,10 +165,8 @@ void chat(uint8_t* secret,int sockfd){
 
         write_win_lin(sockfd, (uint8_t*)buff, sizeof(buff));
 
-		if (strncmp(plain,EXIT, 4) == 0) {
-            printf("Client Exit...\n");
-            break;
-        }
+        if(exiting("Client", plain) == 1)break; //checks for stop-word
+		
 
         // Clear the buffer and receive the response
         memset(buff, 0, MAX);
@@ -187,11 +184,7 @@ void chat(uint8_t* secret,int sockfd){
         }
         printf("    From Server: %s", plain);
 
-        // Exit the loop if the message is "exit"
-        if (strncmp(plain,EXIT, 4) == 0) {
-            printf("Client Exit...\n");
-            break;
-        }
+        if(exiting("Server", plain) == 1)break; //checks for stop-word
 
         crypto_wipe(plain, MAX);// clear plain
 
@@ -202,7 +195,7 @@ void chat(uint8_t* secret,int sockfd){
 ///////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////
-/// Key exchange with x25519 + KDF with Blake2, inverse mapping of elligator  ///
+/// Key exchange with x25519 + KDF with Blake2, inverse mapping of elligator         ///
 ////////////////////////////////////////////////////////////////////////////////////////
 void key_exc_ell(int sockfd) {
     // Variables for key-exchange
@@ -268,7 +261,8 @@ int main(int argc, char *argv[]) {
     key_exc_ell(sockfd);
 
     sockct_cls(sockfd);
-
+    printf("Program ended, press Enter:");
+    getchar();
     return 0;
 }
 
