@@ -34,7 +34,7 @@ analyzovane a mozu prezradit, ze prebieha vymena klucov, co je neziaduce. Dve z
 tychto moznosti pre analyzu vieme odstranit pomocou Elligatora 2:
 
 (1) Overenie rovnice krivky: V pripade Curve25519 sa to nevyplati, pretoze
-nepracujeme s hodnotou "y".(2) Overenie, ci ma rovnost 𝑥^3 + 486662𝑥^2 + 𝑥 mod
+nepracujeme s hodnotou "y".(2) Overenie, ci ma rovnost x^3 + 486662x^2 + x mod
 (255^19) odmocninu: Ak posielame bod na krivke, tato rovnost bude mat odmocninu
 so 100% pravdepodobnostou, ale ked posielame skalar (pseudo-nahodny), tato
 pravdepodobnost klesne na 50%. Preto chceme bod na krivke namapovat na skalar,
@@ -53,43 +53,49 @@ sprav a skryje metadata spojene s komunikaciou.
 
 Algoritmus praci programu:
 ---------------------------
-(1)Na zaciatku sa vytvori socket pre komunikaciu vo funkcii main().(2)Potom sa
-zavola funkcia key_exc_ell, ktora zabezpeci vymenu klucov a generovanie
-rovnakeho "shared secret" na oboch stranach v tychto krokoch:
-      
-      1)Klient si zvoli svoj sukromny kluc (SK), na zaklade ktoreho sa
-      vygeneruje verejny kluc (PK). PK sa nasledne pomocou Elligatora namapuje
-      na skalar. Po uprave velkosti spravy sa tento skryty PK posle serveru.
+(1)Na zaciatku sa vytvori socket pre komunikaciu vo funkcii main().
+(2)Potom sa zavola funkcia key_exc_ell, ktora zabezpeci vymenu klucov a
+generovanie rovnakeho "shared secret" na oboch stranach v tychto krokoch:
+	 
+	 1)Klient si zvoli svoj sukromny kluc (SK), na zaklade ktoreho sa
+	 vygeneruje verejny kluc (PK). PK sa nasledne pomocou Elligatora namapuje
+	 na skalar. Po uprave velkosti spravy sa tento skryty PK posle serveru.
 
-      2)Server dostane "skryty" PK od klienta, upravi jeho velkost a potom
-      pomocou Elligatora namapuje skalar na prislusny bod na krivke
-      (PK klienta).
-      
-      3)Server potom vytvori svoj SK a PK, a Elligator namapuje serverovy PK na
-      prislusny skalar. Nasledne sa tento skalar, upraveny pomocou PADME, posle
-      klientovi.
+	 2)Server dostane "skryty" PK od klienta, upravi jeho velkost a potom
+	 pomocou Elligatora namapuje skalar na prislusny bod na krivke
+	 (PK klienta).
+	 
+	 3)Server potom pomocou funckie key_hidden() vytvori svoj SK a PK, a 
+	 Elligator namapuje serverovy PK na
+	 prislusny skalar. Nasledne sa tento skalar, upraveny pomocou PADME, posle
+	 klientovi.
 
-      4)Klient vykona rovnake kroky ako server v predchadzajucom bode, aby
-      ziskal PK servera.
+	 4)Klient vykona rovnake kroky ako server v predchadzajucom bode, aby
+	 ziskal PK servera.
 
-      5)Pomocou funkcie x25519 obe strany vygeneruju "shared secret".
+	 *Dalsie dva kroky sa vykonaju vo funkcii kdf():*
+	 5)Pomocou funkcie x25519 obe strany vygeneruju "shared secret", co je
+	 surovy zdielany kluc.
   
-      6)Pomocou funkcie Blake2b sa vygeneruje sifrovaci kluc pre ChaCha20
-      (pri generovani sa pouziju verejne kluce oboch stran a "shared secret").
-      Tento kluc sa potom pouzije na sifrovanie komunikacie.
+	 6)Pomocou funkcie Blake2b sa vygeneruje sifrovaci kluc pre ChaCha20
+	 (pri generovani sa pouziju verejne kluce oboch stran a "shared secret").
+	 Tento kluc sa potom pouzije na sifrovanie komunikacie.
 
 (3)Po uspesnej vymene klucov sa zavola funkcia chat, kde bude prebiehat samotna
 komunikacia:
+	 
+	 1)Na zaciatku obe strany vygeneruju nonce a potom ho vyplnia pomocou
+	 PAMDE a poslu druhej strane
 
-      1)Klient ziska spravu z konzoloveho vstupu, vygeneruje nonce, zasifruje
-      spravu a posle ju serveru (spolu so spravou a nonce, upravenymi pomocou
-      PADME).
-      
-      2)Server desifruje ziskanu spravu, vykona rovnake kroky ako klient a posle
-      klientovi zasifrovanu spravu spolu s nonce.
-      
-      3)Komunikacia sa ukonci, ak niektora zo stran posle prikaz exit alebo ak
-      niektora zo stran ukonci beh programu.
+	 2)Klient ziska spravu z konzoloveho vstupu, posle serveru predoslu hodnotu 
+	 citaca blokov, nasledne zasifruje spravu a posle ju serveru.
+	 
+	 2)Server desifruje ziskanu spravu, vykona rovnake kroky ako klient a posle
+	 klientovi citac blokov a zasifrovanu spravu.
+	 
+	 3)Komunikacia sa ukonci, ak niektora zo stran posle stop-slovo
+	 (predvolena hodnota je "exit") alebo ak niektora zo stran ukonci
+	 beh programu.
 
 
 Navod na pouzitie:
@@ -110,18 +116,18 @@ Minimalna verzia cmake: 3.10
  
  #CMAKE# 
 
-      1)V adresare build(tam sa ulozia subory potrebne pre kompilaciu)
-       otvorte prikazovy riadok. 
+	 1)V adresare build(tam sa ulozia subory potrebne pre kompilaciu)
+	  otvorte prikazovy riadok. 
 
-      2)Zadajte prikaz: cmake .. 
+	 2)Zadajte prikaz: cmake .. 
 
-      3)Po uspesnom vygenerovani build-suborov pouzite prikaz:
-       Windows: "cmake --build ." , Linux: "make" 
+	 3)Po uspesnom vygenerovani build-suborov pouzite prikaz:
+	  Windows: "cmake --build ." , Linux: "make" 
 
-      4)Po uspesnom vykonani prikazu sa vytvori adresar "Execute`s",
-      kde budu ulozene server.exe a client.exe. 
+	 4)Po uspesnom vykonani prikazu sa vytvori adresar "Execute`s",
+	 kde budu ulozene server.exe a client.exe. 
 
-      5)Najprv spustite server a potom klienta.
+	 5)Najprv spustite server a potom klienta.
 
  !!!!!Problem Linux!!!!! 
   Ked sa vam vypise chybova hlaska:
@@ -135,15 +141,16 @@ Minimalna verzia cmake: 3.10
 
  #MAKE# 
 
-      1)V adresare projektu otvorte prikazovy riadok. 
+	 1)V adresare projektu otvorte prikazovy riadok. 
 
-      2)Zadajte prikaz:
-      make
+	 2)Zadajte prikaz:
+	 make
 
-      3)Po uspesnom vykonani prikazu sa vytvoria spustitelne subory: server.exe a
-      client.exe. 
+	 3)Po uspesnom vykonani prikazu sa vytvoria spustitelne subory:
+	 server.exe 
+	 client.exe 
 
-      4)Najprv spustite server a potom klienta.
+	 4)Najprv spustite server a potom klienta.
 
  ################
  Moznosti nastavenia parametrov:
@@ -156,7 +163,8 @@ Minimalna verzia cmake: 3.10
  (cislo musi byt rovnake na oboch stranach)
  
  # IP adresa servera #
- Pouzivatel ma tiez moznost zmenit predvolenu adresu servera pre klientsku stranu.
+ Pouzivatel ma tiez moznost zmenit predvolenu adresu servera 
+ pre klientsku stranu.
  Predvolena adresa je nastavena ako loopback adresa (127.0.0.1).
  Adresu je mozne zmenit zadanim ako tretieho argumentu pri spusteni client.exe:
  ./server.exe 8999
