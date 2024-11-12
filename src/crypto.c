@@ -5,6 +5,7 @@
 // Technical University of Kosice //
 // 10.11.2024                     //
 // Nikita Kuropatkin              //
+
 #include"crypto.h"
 
 /////////////////
@@ -44,10 +45,11 @@ void unpad_array(uint8_t* array, uint8_t* pad_array, int og_size) {
 /// KDF with Blake2b///
 //////////////////////////////
 /*
-This function purpose is derive shared key from 
+This function purpose is to derive shared key from 
 raw shared key and PKs of both sides.
-The last parameter is a switch to use specific 
-order for a specific side(server and client)
+The last parameter(int side) is a switch to use specific 
+order for a specific side(server and client),basically it 
+defines what side called this function
 */
 void kdf(uint8_t *shared_key, uint8_t *your_sk, uint8_t *their_pk, int keysz, int side){
     uint8_t shared_secret[keysz]; //raw shared key

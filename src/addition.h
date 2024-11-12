@@ -15,7 +15,8 @@ are in addition.c.
 #define ADDITION_H
 #include <stdio.h>
 #include <string.h>
-
+#include <stdlib.h>
+#include <error.h>
 #define EXIT "exit" // stop word, if someone use it in conversation, it will end
 
 ////////////////////////
@@ -37,5 +38,27 @@ tell who ended communication*/
 int exiting (char *side, char *msg);
 ///////////////////////////
 ///////////////////////////
+
+///////////////////////////
+/// Checking input IP   ///
+///////////////////////////
+/*This function purpose is to check ,whether
+user entered valid IP-address*/
+void ip_check (char *ip);
+///////////////////////////
+///////////////////////////
+
+////////////////////////////////
+/// Printing help for user   ///
+////////////////////////////////
+/*This function purpose is to print basic info 
+for user and then end the program.
+The parameter(int side) is a switch to print specific 
+info for a specific side(server and client),basically it 
+defines what side called this function.
+Other parameters represent default values of port, message size and IP*/
+void help_print (int side, int port, char *ip, int max);
+////////////////////////////////
+////////////////////////////////
 
 #endif

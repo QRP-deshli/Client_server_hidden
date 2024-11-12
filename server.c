@@ -29,6 +29,13 @@ https://elligator.org/
 https://monocypher.org/
 */
 
+/*
+Comment explanation:
+SK -secret key
+PK -public key
+KDF - key derivation function
+*/
+
 //////////Version history//////////
 /*
 Version 0.4 : 
@@ -64,8 +71,12 @@ Version 0.1 - basic functionality;
 #include "crypto.h"
 #include "error.h"
 
-#define MAX 400     //message size, can be changed at your preference
-//This size means amount of characters that will be readed from stdin to send it
+/*
+Message size, can be changed at your preference.
+This size means amount of characters that will be readed from stdin to send it
+*/
+#define MAX 400 
+
 #define KEYSZ 32   //SK, PK, Hidden PK sizes
 #define NONSZ 24   //Nonce size
 /*
@@ -73,9 +84,9 @@ Changing this sizes can and will create security risks or program instability!
 If you need different key or nonce sizes, pls read whole code before
 and consider using different functions from Monocypher
 */
+
 #define PORT 8087 // port number(modify on both sides!)
 #define EXIT "exit" // stop word, if someone use it in conversation, it will end
-
 
 #define SA struct sockaddr
 #define SERVER 0 //Macro for KDF (do not change this macro for this side) 
@@ -85,11 +96,13 @@ and consider using different functions from Monocypher
 //////////////////////////////////////////
 /*
 This function purpose is to open sockets for WIN and LIN OS
+Return value of this function is connection file descriptor (ID of connection)
 */
 int sockct_opn(int *sockfd,int port){
     // initialization for sockets win
     init_sock();
  
+    // create variables
     int connfd;
     struct sockaddr_in servaddr, cli;
 
@@ -102,8 +115,7 @@ int sockct_opn(int *sockfd,int port){
     // Assign IP, PORT
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    if(port == 0)servaddr.sin_port = htons(PORT); //checking if user entered custom port
-    else servaddr.sin_port = htons(port);
+    servaddr.sin_port = htons(port);
     // Bind the socket
     if (bind(*sockfd, (SA*)&servaddr, sizeof(servaddr)) == -1){//checking for error
         sockct_cls(*sockfd);
@@ -154,12 +166,14 @@ void chat(uint8_t* secret,int sockfd)
 
     // Generate nonce
         random_num(nonce, NONSZ);
+
     // Pad Nonce
         pad_array(nonce, pad_nonce,sizeof(nonce), pad_size);
+
     // Send/recieve nonce
         read_win_lin(sockfd, pad_nonce_their, sizeof(pad_nonce));
-
         write_win_lin(sockfd, pad_nonce, sizeof(pad_nonce));
+
     //Un-pad Nonce
         unpad_array(nonce_thm, pad_nonce_their,sizeof(nonce));
 
@@ -169,24 +183,23 @@ void chat(uint8_t* secret,int sockfd)
         memset(buff, 0, MAX);
         memset(plain, 0, MAX);
 
-
-        //Read blck counter
+        //Read block counter and encrypted text
         read_win_lin(sockfd, (uint8_t*)&blkcnt_them, sizeof(blkcnt_them));
-        //Read buff
         read_win_lin(sockfd, (uint8_t*)buff, sizeof(buff));
 
         // Decrypt message from client
         crypto_chacha20_x((uint8_t*)plain, (uint8_t*)buff, sizeof(buff), secret, nonce_thm, blkcnt_them );
 
-        //inserting terminator at the actual end of string to avoid showing another garbage
+        //Insert terminator at the actual end of string to avoid showing another garbage
         for(int j = 0; j < MAX; j++) {
             if(plain[j] == '\n' && j != MAX-1) plain[j+1] = '\0';
         }
 
         // Print decrypted message
         printf("    From client: %s", plain);
-
-        if(exiting("Client", plain) == 1)break; //checks for stop-word
+        
+        //Check for stop-word
+        if(exiting("Client", plain) == 1)break; 
 
         // Clear buffers
         memset(buff, 0, MAX);
@@ -194,20 +207,21 @@ void chat(uint8_t* secret,int sockfd)
 
         // Read server message from stdin
         printf("To client: ");
-        
         if (fgets(plain, sizeof(plain), stdin) == NULL) {
             exit_with_error(ERROR_GETTING_INPUT, "Error reading input");
         }
+
         // Buffer overflow, clear stdin
         if (plain[strlen(plain) - 1] != '\n') {
             printf("Your message was too long, boundaries is: %d symbols, only those will be sent.\n",MAX);
-            clear();
+            clear();// clearing stdin
             plain[strlen(plain) - 1] = '\n';
         }
 
         // Send block counter
         write_win_lin(sockfd, (uint8_t*)&blkcnt_us, sizeof(blkcnt_us));
-        // Encrypt
+        
+        // Encrypt message
         blkcnt_us = crypto_chacha20_x((uint8_t*)buff, (uint8_t*)plain, strlen(plain), secret, nonce , blkcnt_us);
 
          // Send encrypted message to server
@@ -261,6 +275,7 @@ void key_exc_ell(int sockfd) {
     // Main chat loop
     chat(shared_key,sockfd);
 
+    // Clearing shared key
     crypto_wipe(shared_key, KEYSZ);
 }
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -270,17 +285,23 @@ void key_exc_ell(int sockfd) {
 /// Main for socket creation ///
 ///////////////////////////////////
 int main(int argc, char *argv[]) {
-    int port = 0;
+    int port = PORT;
+
     /*arguments in main providing user to change default Port*/
     if (argc == 2 && argv[1][0] != '\0') {//checking if arguments exsist & not empty
+        if(strcmp(argv[1],"/h") == 0)help_print(SERVER,PORT,NULL,MAX);//print help
         port =  atoi(argv[1]); //redefining var to users port
+        if(!(port > 1024 && port <= 65535))exit_with_error(ERROR_PORT_INPUT,"Invalid port");//Checking port
     }
+
     int sockfd;
     int connfd = sockct_opn(&sockfd, port);
+
     // Function for chat
     key_exc_ell(connfd);
 
     sockct_cls(sockfd);
+
     printf("Program ended, press Enter:");
     getchar();
     return 0;

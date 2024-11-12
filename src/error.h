@@ -14,6 +14,8 @@
 #define ERROR_SENDING_DATA 8
 #define ERROR_GENERATING_RANDOM 9
 #define ERROR_CLIENT_CONNECTION 10
+#define ERROR_PORT_INPUT 11
+#define ERROR_IP_INPUT 12
 
 /*
 This function purpose is to print errors in main code`s

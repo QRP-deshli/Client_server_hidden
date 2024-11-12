@@ -42,8 +42,11 @@ void unpad_array(uint8_t* array, uint8_t* pad_array, int og_size);
 /// KDF with Blake2b///
 //////////////////////////////
 /*
-This function purpose is derive shared key from 
-raw shared key and PKs of both sides
+This function purpose is to derive shared key from 
+raw shared key and PKs of both sides.
+The last parameter(int side) is a switch to use specific 
+order for a specific side(server and client),basically it 
+defines what side called this function
 */
 void kdf(uint8_t *shared_key, uint8_t *your_sk, uint8_t *their_pk, int keysz, int side);
 ///////////////////////////////

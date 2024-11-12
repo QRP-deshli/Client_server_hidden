@@ -14,16 +14,17 @@ are in network.c.
 #ifndef NETWORK_H
 #define NETWORK_H
 #include <stdint.h>
+//Windows Libs
 #ifdef _WIN32
-    #include <winsock2.h>   //socket
-    #include <ws2tcpip.h>   //socket
+    #include <winsock2.h>   
+    #include <ws2tcpip.h>   
     #include <io.h>
 //Linux Libs
 #else
     #include <arpa/inet.h>
     #include <netdb.h>
-    #include <netinet/in.h> // socket
-    #include <sys/socket.h>
+    #include <netinet/in.h> 
+    #include <sys/socket.h> 
     #include <sys/types.h>
 #endif
 #include "error.h" //all errors defined + function proto
@@ -33,13 +34,6 @@ are in network.c.
 #else
     #define LEN socklen_t
 #endif 
-//////////////////////////////////////////
-/// Data sender ///
-//////////////////////////////////////////
-/*
-This function purpose is to send data over open sockets for WIN and LIN OS
-*/
-void read_win_lin(int sockfd, uint8_t *msg, unsigned int size);
 
 //////////////////////////////////////////
 /// Data receiver ///
@@ -47,10 +41,19 @@ void read_win_lin(int sockfd, uint8_t *msg, unsigned int size);
 /*
 This function purpose is to receive data over open sockets for WIN and LIN OS
 */
-void write_win_lin(int sockfd, uint8_t *msg, unsigned int size);
+void read_win_lin(int sockfd, uint8_t *msg, unsigned int size);
 //////////////////////////////////////////
 //////////////////////////////////////////
 
+//////////////////////////////////////////
+/// Data sender ///
+//////////////////////////////////////////
+/*
+This function purpose is to send data over open sockets for WIN and LIN OS
+*/
+void write_win_lin(int sockfd, uint8_t *msg, unsigned int size);
+//////////////////////////////////////////
+//////////////////////////////////////////
 
 //////////////////////////////////////////
 /// Socket closer///
@@ -76,7 +79,7 @@ void init_sock();
 /// Socket creation checker///
 //////////////////////////////
 /*
-This function purpose is to initialize socket for windows
+This function purpose is to check if socket was successfully created
 */
 void sock_check(int sockfd);
 //////////////////////////////
