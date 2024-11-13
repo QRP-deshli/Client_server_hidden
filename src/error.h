@@ -1,3 +1,17 @@
+// Client-server api              //
+// Error handling                 //
+// Version 0.5                    //
+// Bachelor`s work project        //
+// Technical University of Kosice //
+// 10.11.2024                     //
+// Nikita Kuropatkin              //
+
+/*
+This header file declares macros for returning values
+of error, also there is a function in config.c,
+that ends program and returns error code value
+(can be programmed to print error message)
+*/
 #ifndef ERROR_H
 #define ERROR_H
 #include <stdio.h>
@@ -16,11 +30,11 @@
 #define ERROR_CLIENT_CONNECTION 10
 #define ERROR_PORT_INPUT 11
 #define ERROR_IP_INPUT 12
-
+#define MESSAGE_ALTERED 13
 /*
 This function purpose is to print errors in main code`s
 You can choose where to print error stderr or stdout by switching 
-macro OUT.
+macro OUT. Switch macro DEBUG to 0, to not print anything.
 */
 void exit_with_error(int error, char * err_string);
 #endif

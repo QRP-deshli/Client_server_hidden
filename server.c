@@ -34,6 +34,8 @@ Comment explanation:
 SK -secret key
 PK -public key
 KDF - key derivation function
+MAC - message authentication code
+AEAD - authenticated encryption with additional data
 */
 
 //////////Version history//////////
@@ -79,6 +81,7 @@ This size means amount of characters that will be readed from stdin to send it
 
 #define KEYSZ 32   //SK, PK, Hidden PK sizes
 #define NONSZ 24   //Nonce size
+#define MACSZ 16   //MAC size
 /*
 Changing this sizes can and will create security risks or program instability!
 If you need different key or nonce sizes, pls read whole code before
@@ -156,39 +159,47 @@ void chat(uint8_t* secret,int sockfd)
     //Variables for encrypted communication+padding Nonce
     char buff[MAX]; //buffer for encrypted text
     char plain[MAX]; // buffer for decrypted text
-    uint8_t nonce[NONSZ]; //our nonce array
+    uint8_t nonce_us[NONSZ]; //our nonce array
     uint8_t nonce_thm[NONSZ]; //their nonce array
-    int pad_size = padme_size(sizeof(nonce)); // size of padded nonce
+    int pad_size = padme_size(sizeof(nonce_us)); // size of padded nonce
     uint8_t pad_nonce[pad_size]; //new array that will contain padded nonce
-    uint8_t pad_nonce_their[pad_size]; //new array that will contain padded nonce
-    uint64_t blkcnt_us = 0; //block counter for us(chacha enc)
-    uint64_t blkcnt_them = 0; //their block counter (chacha enc)
+    uint8_t pad_nonce_their[pad_size]; //new array that will contain their padded nonce
+    uint8_t mac_us[MACSZ]; //MAC of our messages
+    uint8_t mac_thm[MACSZ]; //MAC of their messages
+    //AEAD state variables:
+    crypto_aead_ctx ctx_us;//our structure for aead(stores and increments Shared Key, Nonce and block counter)
+    crypto_aead_ctx ctx_thm;//their structure for aead(stores and increments Shared Key, Nonce and block counter)
 
     // Generate nonce
-        random_num(nonce, NONSZ);
+        random_num(nonce_us, NONSZ);
 
     // Pad Nonce
-        pad_array(nonce, pad_nonce,sizeof(nonce), pad_size);
+        pad_array(nonce_us, pad_nonce,sizeof(nonce_us), pad_size);
 
     // Send/recieve nonce
-        read_win_lin(sockfd, pad_nonce_their, sizeof(pad_nonce));
+        read_win_lin(sockfd, pad_nonce_their, sizeof(pad_nonce_their));
         write_win_lin(sockfd, pad_nonce, sizeof(pad_nonce));
 
     //Un-pad Nonce
-        unpad_array(nonce_thm, pad_nonce_their,sizeof(nonce));
+        unpad_array(nonce_thm, pad_nonce_their,sizeof(nonce_thm));
 
+    //Initialization of an AEAD states:
+        crypto_aead_init_x(&ctx_us, secret, nonce_us);
+        crypto_aead_init_x(&ctx_thm, secret, nonce_thm);    
     while (1) {
 
         //Clearing vars
         memset(buff, 0, MAX);
         memset(plain, 0, MAX);
 
-        //Read block counter and encrypted text
-        read_win_lin(sockfd, (uint8_t*)&blkcnt_them, sizeof(blkcnt_them));
+        // Receive messages from client(MAC and encrypted text)
+        read_win_lin(sockfd, (uint8_t*)&mac_thm, sizeof(mac_thm));
         read_win_lin(sockfd, (uint8_t*)buff, sizeof(buff));
 
-        // Decrypt message from client
-        crypto_chacha20_x((uint8_t*)plain, (uint8_t*)buff, sizeof(buff), secret, nonce_thm, blkcnt_them );
+        // Decrypt and authenticate the message from the server
+        if (crypto_aead_read(&ctx_thm, (uint8_t*)plain, mac_thm, NULL, 0,(uint8_t*)buff, MAX) == -1) {
+            exit_with_error(MESSAGE_ALTERED, "Last received message was altered, exiting"); // if the message was altered during transmission
+        }
 
         //Insert terminator at the actual end of string to avoid showing another garbage
         for(int j = 0; j < MAX; j++) {
@@ -218,13 +229,13 @@ void chat(uint8_t* secret,int sockfd)
             plain[strlen(plain) - 1] = '\n';
         }
 
-        // Send block counter
-        write_win_lin(sockfd, (uint8_t*)&blkcnt_us, sizeof(blkcnt_us));
+        // Encrypt message and generate MAC for it
+        crypto_aead_write(&ctx_us, (uint8_t*)buff, mac_us,NULL, 0,(uint8_t*)plain, MAX);
         
-        // Encrypt message
-        blkcnt_us = crypto_chacha20_x((uint8_t*)buff, (uint8_t*)plain, strlen(plain), secret, nonce , blkcnt_us);
-
-         // Send encrypted message to server
+        // Send MAC for our message to server
+        write_win_lin(sockfd, (uint8_t*)&mac_us, sizeof(mac_us));
+        
+        // Send encrypted message to server
         write_win_lin(sockfd, (uint8_t*)buff, sizeof(buff));
 
         // Check for exit command (again, to exit the loop)
