@@ -16,7 +16,7 @@
 /*
 This function purpose is to print errors in main code`s
 You can choose where to print error stderr or stdout by switching 
-macro OUT.
+macro OUT. Switch macro DEBUG to 0, to not print anything.
 */
 void exit_with_error(int error, char * err_string){
         if(OUT == 0 && DEBUG == 0){
