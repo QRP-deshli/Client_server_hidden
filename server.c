@@ -90,7 +90,6 @@ and consider using different functions from Monocypher
 
 #define PORT 8087 // port number(modify on both sides!)
 
-
 #define SA struct sockaddr
 #define SERVER 0 //Macro for KDF (do not change this macro for this side) 
 
