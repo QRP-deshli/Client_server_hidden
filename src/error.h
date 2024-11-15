@@ -31,6 +31,7 @@ that ends program and returns error code value
 #define ERROR_PORT_INPUT 11
 #define ERROR_IP_INPUT 12
 #define MESSAGE_ALTERED 13
+#define UNEQUAL_MAC 14
 /*
 This function purpose is to print errors in main code`s
 You can choose where to print error stderr or stdout by switching 

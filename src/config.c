@@ -25,5 +25,6 @@ void exit_with_error(int error, char * err_string){
         else if(OUT == 1 && DEBUG == 0){
             fprintf(stdout, "%s.\n", err_string); 
         }
+        getchar();
         exit(error);
 }

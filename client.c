@@ -92,6 +92,9 @@ and consider using different functions from Monocypher
 #define CLIENT 1 //Macro for KDF (do not change this macro for this side) 
 #define SA struct sockaddr
 
+//Long-term shared secret for both sides
+uint8_t key_original[32] = {0xA3,0x80,0x58,0x34,0x7C,0x46,0x6C,0x2D,0xDC,0x3F,0x6B,0xDE,0xB1,0xCB,0x08,0x02,0xD4,0xC8,0xEE,0x41,0x9A,0xF7,0x83,0x29,0x11,0x83,0x6B,0x0B,0x03,0x82,0x97,0xF7};
+
 //////////////////////////////////////////
 /// Socket opener ///
 //////////////////////////////////////////
@@ -184,7 +187,7 @@ void chat(uint8_t* secret,int sockfd){
         crypto_aead_write(&ctx_us, (uint8_t*)buff, mac_us,NULL, 0,(uint8_t*)plain, MAX);
 
         // Send MAC for our message to server
-        write_win_lin(sockfd, (uint8_t*)&mac_us, sizeof(mac_us));
+        write_win_lin(sockfd, mac_us, sizeof(mac_us));
         
         // Send encrypted message to server
         write_win_lin(sockfd, (uint8_t*)buff, sizeof(buff));
@@ -196,7 +199,7 @@ void chat(uint8_t* secret,int sockfd){
         crypto_wipe(plain, MAX);// clear plain
 
         // Receive the response(MAC and encrypted text)
-        read_win_lin(sockfd, (uint8_t*)&mac_thm, sizeof(mac_thm));
+        read_win_lin(sockfd, mac_thm, sizeof(mac_thm));
         read_win_lin(sockfd, (uint8_t*)buff, sizeof(buff));
 
         // Decrypt and authenticate the message from the server
@@ -230,6 +233,8 @@ void key_exc_ell(int sockfd) {
     uint8_t their_pk[KEYSZ]; //their private key
     uint8_t shared_key[KEYSZ]; //shared key material
     uint8_t hidden[KEYSZ]; //your PK hiddent with inverse mapping
+    uint8_t mac_us[MACSZ]; //keyed MAC of shared key(client), our authentication 
+    uint8_t mac_thm[MACSZ]; //keyed MAC of shared key(server), authentication of other side
 
     // Computing size of padded hidden PK and creating variable
     int pad_size = padme_size(sizeof(your_pk));
@@ -254,6 +259,18 @@ void key_exc_ell(int sockfd) {
 
     // Compute the shared secret
     kdf(shared_key, your_sk, their_pk, KEYSZ, CLIENT);
+
+    // Compute keyed MAC of our shared key
+    crypto_blake2b_keyed(mac_us, sizeof(mac_us), key_original, sizeof(key_original), shared_key, sizeof(shared_key));
+
+    // Send and get MAC of shared(authentication of the sides)
+    write_win_lin(sockfd, mac_us, sizeof(mac_us));
+    read_win_lin(sockfd, mac_thm, sizeof(mac_thm));
+
+    // Checking if server is legit(if it owns shared SK)
+    if(crypto_verify16(mac_us, mac_thm) == -1){
+        exit_with_error(UNEQUAL_MAC,"Other side isn`t legit, aborting");
+    }
     
     chat(shared_key,sockfd);
 
