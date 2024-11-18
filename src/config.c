@@ -25,6 +25,7 @@ void exit_with_error(int error, char * err_string){
         else if(OUT == 1 && DEBUG == 0){
             fprintf(stdout, "%s.\n", err_string); 
         }
+        printf("Error occured, program exited, press Enter:");
         getchar();
         exit(error);
 }

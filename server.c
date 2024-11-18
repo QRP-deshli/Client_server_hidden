@@ -72,29 +72,11 @@ Version 0.1 - basic functionality;
 #include "random.h"
 #include "crypto.h"
 #include "error.h"
-
-/*
-Message size, can be changed at your preference.
-This size means amount of characters that will be readed from stdin to send it
-*/
-#define MAX 400 
-
-#define KEYSZ 32   //SK, PK, Hidden PK sizes
-#define NONSZ 24   //Nonce size
-#define MACSZ 16   //MAC size
-/*
-Changing this sizes can and will create security risks or program instability!
-If you need different key or nonce sizes, pls read whole code before
-and consider using different functions from Monocypher
-*/
-
-#define PORT 8087 // port number(modify on both sides!)
+#include "parameters.h"
+#include "secret.h"
 
 #define SA struct sockaddr
 #define SERVER 0 //Macro for KDF (do not change this macro for this side) 
-
-//Long-term shared secret for both sides
-uint8_t key_original[32] = {0xA3,0x80,0x58,0x34,0x7C,0x46,0x6C,0x2D,0xDC,0x3F,0x6B,0xDE,0xB1,0xCB,0x08,0x02,0xD4,0xC8,0xEE,0x41,0x9A,0xF7,0x83,0x29,0x11,0x83,0x6B,0x0B,0x03,0x82,0x97,0xF7};
 
 //////////////////////////////////////////
 /// Socket opener ///
@@ -102,6 +84,7 @@ uint8_t key_original[32] = {0xA3,0x80,0x58,0x34,0x7C,0x46,0x6C,0x2D,0xDC,0x3F,0x
 /*
 This function purpose is to open sockets for WIN and LIN OS
 Return value of this function is connection file descriptor (ID of connection)
+Also input variables are port number and server IP
 */
 int sockct_opn(int *sockfd,int port){
     // initialization for sockets win

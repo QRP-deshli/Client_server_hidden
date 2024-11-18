@@ -70,30 +70,14 @@ Version 0.1 - basic functionality;
 #include "addition.h"
 #include "random.h"
 #include "crypto.h"
+#include "parameters.h"
+#include "secret.h"
 
-/*
-Message size, can be changed at your preference.
-This size means amount of characters that will be readed from stdin to send it
-*/
-#define MAX 400    
-
-#define KEYSZ 32   //SK, PK, Hidden PK sizes
-#define NONSZ 24   //Nonce size
-#define MACSZ 16   //MAC size
+#define IPSZ 16   //IP size
 #define IP "127.0.0.1" //Ip address of the server
-/*
-Changing this sizes can and will create security risks or program instability!
-If you need different key or nonce sizes, pls read whole code before
-and consider using different functions from Monocypher
-*/
-
-#define PORT 8087 // port number(modify on both sides!)
 
 #define CLIENT 1 //Macro for KDF (do not change this macro for this side) 
 #define SA struct sockaddr
-
-//Long-term shared secret for both sides
-uint8_t key_original[32] = {0xA3,0x80,0x58,0x34,0x7C,0x46,0x6C,0x2D,0xDC,0x3F,0x6B,0xDE,0xB1,0xCB,0x08,0x02,0xD4,0xC8,0xEE,0x41,0x9A,0xF7,0x83,0x29,0x11,0x83,0x6B,0x0B,0x03,0x82,0x97,0xF7};
 
 //////////////////////////////////////////
 /// Socket opener ///
@@ -101,6 +85,7 @@ uint8_t key_original[32] = {0xA3,0x80,0x58,0x34,0x7C,0x46,0x6C,0x2D,0xDC,0x3F,0x
 /*
 This function purpose is to open sockets for WIN and LIN OS
 Return value of this function is file descriptor of socket(ID of socket)
+Also input variables are port number and server IP
 */
 int sockct_opn(int port, char *ip){
     int sockfd;
@@ -285,9 +270,8 @@ void key_exc_ell(int sockfd) {
 ///////////////////////////////////
 int main(int argc, char *argv[]) {
     int port = PORT; 
-    char *ip = calloc(strlen(IP)+1, sizeof(char));
+    char ip[IPSZ];
     strcpy(ip,IP);
-
     /*arguments in main providing user to change default IP of server(loopback) and port*/
     if (argc >= 2) {//checking if arguments exsist
         if(argv[1][0] != '\0'){ // Port argument is not empty
@@ -296,14 +280,14 @@ int main(int argc, char *argv[]) {
             if(!(port > 1024 && port <= 65535))exit_with_error(ERROR_PORT_INPUT,"Invalid port");//Checking port
         }
         if(argc == 3 && argv[2][0] != '\0'){ // IP argument is not empty
-            ip = calloc(strlen(argv[2])+1, sizeof(char)); // copy input val to dynamic array
-            strcpy(ip,argv[2]);
-            ip_check(ip);
+            if(strlen(argv[2]) >= IPSZ)exit_with_error(ERROR_IP_INPUT,"Invalid IP(Too long)");//Checking IP
+            strcpy(ip,argv[2]); //copy for checking 
+            ip_check(argv[2]); //check of ip
+            strcpy(ip,argv[2]); //copy valid ip
         }
     }
 
     int sockfd = sockct_opn(port,ip);
-    free(ip); // free mem after ip
 
     key_exc_ell(sockfd);
 

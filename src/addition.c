@@ -13,7 +13,7 @@
 ////////////////////////
 /*This function purpose is to clear stdin after 
 entering oversized message(stdin overflow)*/
-void clear (){
+void clear (void){
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 }
@@ -46,15 +46,11 @@ user entered valid IP-address*/
 void ip_check (char *ip){
     int test;
     int dot_count = 0;
-    char *copyip = calloc(strlen(ip)+1, sizeof(char));//copy of the string 
-    strcpy(copyip,ip);
-
     for(int i = 0;i<(int)strlen(ip);i++){//checking amount of dots in ipv4
-        if(copyip[i] == '.')dot_count++;
+        if(ip[i] == '.')dot_count++;
     }
     if(dot_count != 3)exit_with_error(ERROR_IP_INPUT,"Invalid IP");//Checking IP
-
-    char *ptr = strtok(copyip, ".");//divide string to tokens
+    char *ptr = strtok(ip, ".");//divide string to tokens
     test = atoi(ptr);//one quarter of ipv4 to a number
     if(test<0 || test>255)exit_with_error(ERROR_IP_INPUT,"Invalid IP");//Checking quarter of IP
     while (ptr != NULL){
