@@ -21,11 +21,13 @@ macro OUT. Switch macro DEBUG to 0, to not print anything.
 void exit_with_error(int error, char * err_string){
         if(OUT == 0 && DEBUG == 0){
             fprintf(stderr, "%s.\n", err_string);
+            fprintf(stderr, "%s\n", "Error occured, program exited, press Enter:");
+            getchar();
         }
         else if(OUT == 1 && DEBUG == 0){
             fprintf(stdout, "%s.\n", err_string); 
+            fprintf(stdout, "%s\n", "Error occured, program exited, press Enter:");
+            getchar();
         }
-        printf("Error occured, program exited, press Enter:");
-        getchar();
         exit(error);
 }
