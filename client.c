@@ -131,35 +131,44 @@ int sockct_opn(int port, char *ip){
 ///////////////////////////////////////////////////
 void chat(uint8_t* secret,int sockfd){
     // Creating variables
-    char buff[MAX]; //buffer for encrypted text
-    char plain[MAX]; // buffer for decrypted text
-    uint8_t nonce_us[NONSZ]; //our nonce array
-    uint8_t nonce_thm[NONSZ]; //their nonce array
-    int pad_size = padme_size(sizeof(nonce_us)); // size of padded nonce
-    uint8_t pad_nonce[pad_size]; //new array that will contain padded nonce
-    uint8_t pad_nonce_their[pad_size]; //new array that will contain their padded nonce
-    uint8_t mac_us[MACSZ]; //MAC of our messages
-    uint8_t mac_thm[MACSZ]; //MAC of their messages
+    char buff[MAX]; // Buffer for encrypted text
+    char plain[MAX]; // Buffer for decrypted text
+
+    // Variables for nonce
+    uint8_t nonce_us[NONSZ]; // Our nonce array
+    uint8_t nonce_thm[NONSZ]; // Their nonce array
+    int pad_size = padme_size(NONSZ); // Size of padded nonce
+    uint8_t pad_nonce[pad_size]; // New array that will contain padded nonce
+    uint8_t pad_nonce_their[pad_size]; // New array that will contain their padded nonce
+
+    // Variables for MAC
+    uint8_t mac_us[MACSZ]; // MAC of our messages
+    uint8_t mac_thm[MACSZ]; // MAC of their messages
+    pad_size = padme_size(MACSZ);
+    uint8_t padded_mac_us[pad_size]; // Our padded MAC
+    uint8_t padded_mac_thm[pad_size]; // Their padded MAC
+
     //AEAD state variables:
-    crypto_aead_ctx ctx_us;//our structure for aead(stores and increments Shared Key, Nonce and block counter)
-    crypto_aead_ctx ctx_thm;//their structure for aead(stores and increments Shared Key, Nonce and block counter)
+    crypto_aead_ctx ctx_us;// Our structure for aead(stores and increments Shared Key, Nonce and block counter)
+    crypto_aead_ctx ctx_thm;// Their structure for aead(stores and increments Shared Key, Nonce and block counter)
 
     // Generate nonce
-        random_num(nonce_us, NONSZ);
+    random_num(nonce_us, NONSZ);
 
     // Pad Nonce
-        pad_array(nonce_us, pad_nonce,sizeof(nonce_us), pad_size);
+    pad_array(nonce_us, pad_nonce,sizeof(nonce_us), pad_size);
 
     // Send/recieve nonce
-        write_win_lin(sockfd, pad_nonce, sizeof(pad_nonce));
-        read_win_lin(sockfd, pad_nonce_their, sizeof(pad_nonce_their));
+    write_win_lin(sockfd, pad_nonce, sizeof(pad_nonce));
+    read_win_lin(sockfd, pad_nonce_their, sizeof(pad_nonce_their));
 
-    //Un-pad Nonce
-        unpad_array(nonce_thm, pad_nonce_their,sizeof(nonce_thm));
+    // Un-pad Nonce
+    unpad_array(nonce_thm, pad_nonce_their,sizeof(nonce_thm));
 
-    //Initialization of an AEAD states:
-        crypto_aead_init_x(&ctx_us, secret, nonce_us);
-        crypto_aead_init_x(&ctx_thm, secret, nonce_thm);
+    // Initialization of an AEAD states:
+    crypto_aead_init_x(&ctx_us, secret, nonce_us);
+    crypto_aead_init_x(&ctx_thm, secret, nonce_thm);
+
      while (1) {
         // Clear buffers 
         memset(buff, 0, MAX);
@@ -181,8 +190,9 @@ void chat(uint8_t* secret,int sockfd){
         // Encrypt message and generate MAC for it
         crypto_aead_write(&ctx_us, (uint8_t*)buff, mac_us,NULL, 0,(uint8_t*)plain, MAX);
 
-        // Send MAC for our message to server
-        write_win_lin(sockfd, mac_us, sizeof(mac_us));
+        // Send padded MAC of our message
+        pad_array(mac_us, padded_mac_us, sizeof(mac_us), sizeof(padded_mac_us));// padding our MAC
+        write_win_lin(sockfd, padded_mac_us, sizeof(padded_mac_us));
         
         // Send encrypted message to server
         write_win_lin(sockfd, (uint8_t*)buff, sizeof(buff));
@@ -193,8 +203,11 @@ void chat(uint8_t* secret,int sockfd){
         memset(buff, 0, MAX);
         crypto_wipe(plain, MAX);// clear plain
 
-        // Receive the response(MAC and encrypted text)
-        read_win_lin(sockfd, mac_thm, sizeof(mac_thm));
+        // Get padded MAC of message
+        read_win_lin(sockfd, padded_mac_thm, sizeof(padded_mac_thm));
+        unpad_array(mac_thm, padded_mac_thm, sizeof(mac_thm)); //Un-pad recieved MAC
+
+        // Get message from other side
         read_win_lin(sockfd, (uint8_t*)buff, sizeof(buff));
 
         // Decrypt and authenticate the message from the server
@@ -228,11 +241,16 @@ void key_exc_ell(int sockfd) {
     uint8_t their_pk[KEYSZ]; //their private key
     uint8_t shared_key[KEYSZ]; //shared key material
     uint8_t hidden[KEYSZ]; //your PK hiddent with inverse mapping
+    
+    // Variables for MAC of sides
     uint8_t mac_us[MACSZ]; //keyed MAC of shared key(client), our authentication 
     uint8_t mac_thm[MACSZ]; //keyed MAC of shared key(server), authentication of other side
+    int pad_size = padme_size(MACSZ);
+    uint8_t padded_mac_us[pad_size]; //our padded MAC
+    uint8_t padded_mac_thm[pad_size]; //their padded MAC
 
     // Computing size of padded hidden PK and creating variable
-    int pad_size = padme_size(sizeof(your_pk));
+    pad_size = padme_size(KEYSZ);
     uint8_t pad_your_pk[pad_size]; //your padded hidden PK
     uint8_t pad_hidden[pad_size]; //their padded hidden PK
 
@@ -240,7 +258,7 @@ void key_exc_ell(int sockfd) {
     key_hidden(your_sk, your_pk, KEYSZ);
 
     // Padding of hidden PK
-    pad_array(your_pk, pad_your_pk,sizeof(your_pk), pad_size);
+    pad_array(your_pk, pad_your_pk, sizeof(your_pk), sizeof(pad_your_pk));
 
     // Sending/receiving PK(hidden and padded) (key exchange)
     write_win_lin(sockfd, pad_your_pk, sizeof(pad_your_pk));
@@ -257,10 +275,14 @@ void key_exc_ell(int sockfd) {
 
     // Compute keyed MAC of our shared key
     crypto_blake2b_keyed(mac_us, sizeof(mac_us), key_original, sizeof(key_original), shared_key, sizeof(shared_key));
+    
+    // Send padded MAC of shared key(authentication of the sides)
+    pad_array(mac_us, padded_mac_us,sizeof(mac_us), sizeof(padded_mac_us));// padding our MAC
+    write_win_lin(sockfd, padded_mac_us, sizeof(padded_mac_us));
 
-    // Send and get MAC of shared(authentication of the sides)
-    write_win_lin(sockfd, mac_us, sizeof(mac_us));
-    read_win_lin(sockfd, mac_thm, sizeof(mac_thm));
+    // Get padded MAC of shared key(authentication of the sides)
+    read_win_lin(sockfd, padded_mac_thm, sizeof(padded_mac_thm));
+    unpad_array(mac_thm, padded_mac_thm, sizeof(mac_thm)); //Un-pad received MAC of other side
 
     // Checking if server is legit(if it owns shared SK)
     if(crypto_verify16(mac_us, mac_thm) == -1){
