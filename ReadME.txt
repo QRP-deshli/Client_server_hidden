@@ -19,7 +19,7 @@ serverom.
 X25519: Algoritmus na vymenu klucov zalozeny na eliptickej krivke Curve25519. V
 tomto programe sa pouziva funkcia crypto_x25519_dirty_small, ktorá ku
 vygenerovanému verejnému kľúču pridáva bod krivky s nízkym rádom. To umožňuje
-generovať verejné kľúče na celej krivke, nielen v tzv. "Prime order sub-group".
+generovať verejné kľúče na celej krivke, nielen v tzv. hlavnej podgrupy krivky.
 Táto funkcia je použitá kvôli kompatibilite s Elligatorom.
 
 Blake2b: Hasovacia funkcia zvolena na implementaciu KDF (Key Derivation
@@ -77,23 +77,35 @@ generovanie rovnakeho "shared secret" na oboch stranach v tychto krokoch:
 	 5)Pomocou funkcie x25519 obe strany vygeneruju "shared secret", co je
 	 surovy zdielany kluc.
   
-	 6)Pomocou funkcie Blake2b sa vygeneruje sifrovaci kluc pre ChaCha20
+	 6)Pomocou funkcie Blake2b sa vygeneruje sifrovaci kluc pre 
+	 AEAD(ChaCha20 + Poly1305)
 	 (pri generovani sa pouziju verejne kluce oboch stran a "shared secret").
-	 Tento kluc sa potom pouzije na sifrovanie komunikacie.
+	
+	 7)Pomocou Blake2b a zdielaneho SK sa vygeneruje MAC, ktory strany 
+	 preposlu jedna druhej. Tymto overia, ze druha strana je legitimna 
+	 (kazda strana porovna MAC druhej strany s tym, co vygenerovala samostatne.
+	 Ak su rovnake, znamena to, ze druha strana vlastni zdielany SK). 
+	 Ked strany su legitimne kluc vygenerovani pomocou kdf() sa potom pouzije
+	 na sifrovanie komunikacie.
+
 
 (3)Po uspesnej vymene klucov sa zavola funkcia chat, kde bude prebiehat samotna
 komunikacia:
 	 
 	 1)Na zaciatku obe strany vygeneruju nonce a potom ho vyplnia pomocou
 	 PAMDE a poslu druhej strane
+	 
+	 2)Kazda zo stran nainicializuje dva bloky AEAD: jeden pre autentifikovane
+	 sifrovanie a druhy pre autentifikovane desifrovanie sprav od druhej strany.
 
-	 2)Klient ziska spravu z konzoloveho vstupu, posle serveru predoslu hodnotu 
-	 citaca blokov, nasledne zasifruje spravu a posle ju serveru.
+	 3)Klient ziska spravu z konzoloveho vstupu, spravu zasifruje a autentifikuje
+	 pomocou AEAD (ChaCha20 sa pouzije na sifrovanie a Poly1305 na generovanie 
+	 MAC spravy). Nasledne sifrovanu spravu a MAC posle druhej strane.
 	 
-	 2)Server desifruje ziskanu spravu, vykona rovnake kroky ako klient a posle
-	 klientovi citac blokov a zasifrovanu spravu.
+	 4)Server desifruje a autentifikuje prijatu spravu pomocou AEAD,
+	 vykona rovnake kroky ako klient a posle klientovi zasifrovanu spravu a MAC.
 	 
-	 3)Komunikacia sa ukonci, ak niektora zo stran posle stop-slovo
+	 5)Komunikacia sa ukonci, ak niektora zo stran posle stop-slovo
 	 (predvolena hodnota je "exit") alebo ak niektora zo stran ukonci
 	 beh programu.
 
@@ -182,7 +194,10 @@ Minimalna verzia cmake: 3.10
   8 - chyba: nepodarilo sa poslat data.  
   9 - chyba: nepodarilo sa vygenerovat nahodne cisla.  
   10 - chyba: klientovi sa nepodarilo pripojit ku serveru.  
-
+  11 - chyba: nespravne zadane cislo portu.  
+  12 - chyba: nespravne zadana ip adresa.  
+  13 - chyba: sprava bola modifikovana pocas prenosu.  
+  14 - chyba: ina strana nie je legetimnou(nevlastni spolocny zdielany kluc).  
  ################
 # Zdroje #
 https://elligator.org/
