@@ -1,6 +1,6 @@
 // Client-server api              //
 // Random number generator        //
-// Version 0.5                    //
+// Version 0.5.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
 // 10.11.2024                     //

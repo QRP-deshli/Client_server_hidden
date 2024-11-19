@@ -1,15 +1,14 @@
 // Client-server api              //
 // Additional functions           //
-// Version 0.5                    //
+// Version 0.5.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
 // 10.11.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
-This header file declares additional functions
-for a client-server application. Function definitions
-are in addition.c. 
+This header file contains macros for the operation of the client and server programs.
+Read the comments next to each macro for an explanation of its purpose.
 */
 #ifndef PARAMETERS_H
 #define PARAMETERS_H

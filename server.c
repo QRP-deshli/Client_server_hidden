@@ -1,6 +1,6 @@
 // Client-server api              //
 // Client side                    //
-// Version 0.5                    //
+// Version 0.5.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
 // 10.11.2024                     //
@@ -40,6 +40,16 @@ AEAD - authenticated encryption with additional data
 
 //////////Version history//////////
 /*
+Version 0.5.5 :
+# Added a demo for long-term shared key authentication
+# Corrected mistake with IP handling in memory
+# Cleaned up and beautified some functions
+Version 0.5 : 
+# Added and moved code and macros to additional files
+# Migrated from ChaCha20 encryption to AEAD stream encryption
+# Added help + port input checks
+# Cleaned up code and added more comments
+# Added .bat files for easy start
 Version 0.4 : 
 # Added posibility to change default port and IP of server, while running program
 # All functions for compatibility with different OSs are contained in shared.c now

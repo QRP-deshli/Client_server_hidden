@@ -1,15 +1,14 @@
 // Client-server api              //
-// Additional functions           //
-// Version 0.5                    //
+// Long-term shared secret        //
+// Version 0.5.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
 // 10.11.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
-This header file declares additional functions
-for a client-server application. Function definitions
-are in addition.c. 
+This header file contains the long-term shared secret for authenticating both sides
+(it can be changed, but must be updated on both sides).
 */
 #ifndef SECRET_H
 #define SECRET_H
