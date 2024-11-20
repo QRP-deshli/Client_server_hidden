@@ -3,7 +3,7 @@
 // Version 0.5.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 10.11.2024                     //
+// 19.11.2024                     //
 // Nikita Kuropatkin              //
 
 #include"addition.h"

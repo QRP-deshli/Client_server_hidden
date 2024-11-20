@@ -3,7 +3,7 @@
 // Version 0.5.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 10.11.2024                     //
+// 19.11.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
@@ -21,7 +21,7 @@ are in random.c.
 #else
     #include <bsd/stdlib.h>
 #endif
-#include "error.h"//all errors defined + function proto
+#include "error.h"// all errors defined + function proto
 
 //////////////////////////////////////////
 /// Random numbers generator ///

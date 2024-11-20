@@ -3,15 +3,18 @@
 // Version 0.5.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 10.11.2024                     //
+// 19.11.2024                     //
 // Nikita Kuropatkin              //
+
 /*
 This code provides encrypted client-server communication in form of chat.
 Also this program has steganographic support in form of usage
 Elligator 2 and PADME.
 Program uses Monocypher`s library provided cryptographic primitives:
 Crypto:
-xChaCha20 - stream cypher for text encryption;
+Incremental AEAD with this two algorithms:
+    xChaCha20 - stream cypher for text encryption;
+    Poly1305 - one-time MAC;
 Blake2b - hash function used for key derivation;
 X25519 - function for key exchange(uses Curve25519);
 Crypto_wipe - function for constant time memory wipe.
@@ -97,10 +100,10 @@ Return value of this function is connection file descriptor (ID of connection)
 Also input variables are port number and server IP
 */
 int sockct_opn(int *sockfd,int port){
-    // initialization for sockets win
+    // Initialization for sockets win
     init_sock();
  
-    // create variables
+    // Create variables
     int connfd;
     struct sockaddr_in servaddr, cli;
 
@@ -115,7 +118,7 @@ int sockct_opn(int *sockfd,int port){
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(port);
     // Bind the socket
-    if (bind(*sockfd, (SA*)&servaddr, sizeof(servaddr)) == -1){//checking for error
+    if (bind(*sockfd, (SA*)&servaddr, sizeof(servaddr)) == -1){// Checking for error
         sockct_cls(*sockfd);
         exit_with_error(ERROR_BINDING, "Socket bind failed");
     }
@@ -123,18 +126,18 @@ int sockct_opn(int *sockfd,int port){
         printf("Socket successfully binded..\n");
     }
     // Listen for incoming connections
-    if (listen(*sockfd, 5) == -1){ //checking if listening failed
+    if (listen(*sockfd, 5) == -1){// Checking if listening failed
         sockct_cls(*sockfd);
         exit_with_error(ERROR_SOCKET_LISTENING, "Listen failed");
     }
     else{
         printf("Server listening..\n");
     }
-    LEN len = sizeof(cli); //addr_len using macro(diff types for WIN & LINUX)
+    LEN len = sizeof(cli);// addr_len using macro(diff types for WIN & LINUX)
 
     // Accept a connection
     connfd = accept(*sockfd, (SA*)&cli, &len);
-    if(connfd == -1){//check for error 
+    if(connfd == -1){// Check for error 
         sockct_cls(*sockfd);
         exit_with_error(ERROR_SERVER_ACCEPT, "Server accept failed");
     }

@@ -3,15 +3,18 @@
 // Version 0.5.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 10.11.2024                     //
+// 19.11.2024                     //
 // Nikita Kuropatkin              //
+
 /*
 This code provides encrypted client-server communication in form of chat.
 Also this program has steganographic support in form of usage
 Elligator 2 and PADME.
 Program uses Monocypher`s library provided cryptographic primitives:
 Crypto:
-xChaCha20 - stream cypher for text encryption;
+Incremental AEAD with this two algorithms:
+    xChaCha20 - stream cypher for text encryption;
+    Poly1305 - one-time MAC;
 Blake2b - hash function used for key derivation;
 X25519 - function for key exchange(uses Curve25519);
 Crypto_wipe - function for constant time memory wipe.
@@ -83,8 +86,8 @@ Version 0.1 - basic functionality;
 #include "parameters.h"
 #include "secret.h"
 
-#define IPSZ 16   //IP size
-#define IP "127.0.0.1" //Ip address of the server
+#define IPSZ 16   // Ip size
+#define IP "127.0.0.1" // Ip address of the server
 
 #define CLIENT 1 //Macro for KDF (do not change this macro for this side) 
 #define SA struct sockaddr
@@ -290,7 +293,7 @@ void key_exc_ell(int sockfd) {
     }
     
     chat(shared_key,sockfd);
-
+    // Wiping secrets
     crypto_wipe(shared_key, KEYSZ);
 }
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -305,17 +308,17 @@ int main(int argc, char *argv[]) {
     char ip[IPSZ];
     strcpy(ip,IP);
     /*arguments in main providing user to change default IP of server(loopback) and port*/
-    if (argc >= 2) {//checking if arguments exsist
+    if (argc >= 2) {// checking if arguments exsist
         if(argv[1][0] != '\0'){ // Port argument is not empty
-            if(strcmp(argv[1],"/h") == 0)help_print(CLIENT,PORT,IP,MAX);//print help
-            port =  atoi(argv[1]); //redefining var to users port
-            if(!(port > 1024 && port <= 65535))exit_with_error(ERROR_PORT_INPUT,"Invalid port");//Checking port
+            if(strcmp(argv[1],"/h") == 0)help_print(CLIENT,PORT,IP,MAX);// print help
+            port =  atoi(argv[1]); // redefining var to users port
+            if(!(port > 1024 && port <= 65535))exit_with_error(ERROR_PORT_INPUT,"Invalid port");// checking port
         }
         if(argc == 3 && argv[2][0] != '\0'){ // IP argument is not empty
-            if(strlen(argv[2]) >= IPSZ)exit_with_error(ERROR_IP_INPUT,"Invalid IP(Too long)");//Checking IP
-            strcpy(ip,argv[2]); //copy for checking 
-            ip_check(argv[2]); //check of ip
-            strcpy(ip,argv[2]); //copy valid ip
+            if(strlen(argv[2]) >= IPSZ)exit_with_error(ERROR_IP_INPUT,"Invalid IP(Too long)");// checking IP
+            strcpy(ip,argv[2]); // copy for checking 
+            ip_check(argv[2]); // check of ip
+            strcpy(ip,argv[2]); // copy valid ip
         }
     }
 

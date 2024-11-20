@@ -3,7 +3,7 @@
 // Version 0.5.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 10.11.2024                     //
+// 19.11.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
@@ -24,7 +24,7 @@ are in addition.c.
 ////////////////////////
 /*This function purpose is to clear stdin after 
 entering oversized message(stdin overflow)*/
-void clear ();
+void clear (void);
 ////////////////////////
 ////////////////////////
 

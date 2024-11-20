@@ -1,3 +1,0 @@
-Here use commands from README.txt and cmake
-
-
