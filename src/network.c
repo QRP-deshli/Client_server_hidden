@@ -7,6 +7,7 @@
 // Nikita Kuropatkin              //
 
 #include"network.h"
+#include "error.h" //all errors defined + function proto
 
 //////////////////////////////////////////
 /// Data receiver ///
@@ -96,10 +97,10 @@ This function purpose is to check if socket was successfully created
 */
 void sock_check(int sockfd){
     if (sockfd == -1) {
-        exit_with_error(ERROR_SOCKET_CREATION, "Socket creation failed");
             #ifdef _WIN32
                 WSACleanup();
             #endif
+        exit_with_error(ERROR_SOCKET_CREATION, "Socket creation failed");
     } else {
         printf("Socket successfully created..\n");
     }

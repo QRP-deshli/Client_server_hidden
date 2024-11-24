@@ -84,8 +84,10 @@ Version 0.1 - basic functionality;
 #include "random.h"
 #include "crypto.h"
 #include "parameters.h"
-#include "secret.h"
+#include "client/secret.h"
+#include "error.h"
 
+#define PINSZ 6   // PIN size
 #define IPSZ 16   // Ip size
 #define IP "127.0.0.1" // Ip address of the server
 
@@ -127,7 +129,8 @@ int sockct_opn(int port, char *ip){
     return sockfd;
 
 }
-
+///////////////////////////////////////////////////
+///////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////
 /// Client-server communication "chatting" ///
@@ -180,6 +183,7 @@ void chat(uint8_t* secret,int sockfd){
         // Recieve message to send
         printf("To server: ");
         if (fgets(plain, sizeof(plain), stdin) == NULL) {
+            crypto_wipe(secret, KEYSZ); //wiping key before aborting
             exit_with_error(ERROR_GETTING_INPUT, "Error reading input");
         }
 
@@ -215,6 +219,7 @@ void chat(uint8_t* secret,int sockfd){
 
         // Decrypt and authenticate the message from the server
         if (crypto_aead_read(&ctx_thm, (uint8_t*)plain, mac_thm, NULL, 0,(uint8_t*)buff, MAX) == -1) {
+            crypto_wipe(secret, KEYSZ); //wiping key before aborting
             exit_with_error(MESSAGE_ALTERED, "Last received message was altered, exiting"); // if the message was altered during transmission
         }
 
@@ -233,6 +238,25 @@ void chat(uint8_t* secret,int sockfd){
 }
 ///////////////////////////////////////////////////
 ///////////////////////////////////////////////////
+void pin_cheker(uint8_t *plain_key){
+    char pin[IPSZ]; // bigger size for checking
+    uint8_t hashed_pin[KEYSZ]; //hashed value of pin
+
+    printf("Enter PIN: ");
+    fgets(pin,IPSZ,stdin); // getting pin
+    int len = strlen(pin)-1; // length of PIN client entered
+
+    // Buffer overflow or PIN longer that it suppose to be, abort
+    if (pin[len] != '\n' || len != PINSZ) {
+        exit_with_error(WRONG_PIN,"You entered wrong PIN");
+    }
+
+    crypto_blake2b(hashed_pin, KEYSZ, (uint8_t*)pin, PINSZ); //hashing entered pin
+
+    for (int i = 0; i < KEYSZ; i++) {
+    plain_key[i] = key_original[i] ^ hashed_pin[i];
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 /// Key exchange with x25519 + KDF with Blake2, inverse mapping of elligator         ///
@@ -244,6 +268,7 @@ void key_exc_ell(int sockfd) {
     uint8_t their_pk[KEYSZ]; //their private key
     uint8_t shared_key[KEYSZ]; //shared key material
     uint8_t hidden[KEYSZ]; //your PK hiddent with inverse mapping
+    uint8_t plain_key[KEYSZ]; //key for authentication of your side
     
     // Variables for MAC of sides
     uint8_t mac_us[MACSZ]; //keyed MAC of shared key(client), our authentication 
@@ -276,8 +301,11 @@ void key_exc_ell(int sockfd) {
     // Compute the shared secret
     kdf(shared_key, your_sk, their_pk, KEYSZ, CLIENT);
 
+    // Asking and checking PIN from user
+    pin_cheker(plain_key);
+
     // Compute keyed MAC of our shared key
-    crypto_blake2b_keyed(mac_us, sizeof(mac_us), key_original, sizeof(key_original), shared_key, sizeof(shared_key));
+    crypto_blake2b_keyed(mac_us, sizeof(mac_us), plain_key, sizeof(plain_key), shared_key, sizeof(shared_key));
     
     // Send padded MAC of shared key(authentication of the sides)
     pad_array(mac_us, padded_mac_us,sizeof(mac_us), sizeof(padded_mac_us));// padding our MAC

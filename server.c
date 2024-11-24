@@ -86,7 +86,7 @@ Version 0.1 - basic functionality;
 #include "crypto.h"
 #include "error.h"
 #include "parameters.h"
-#include "secret.h"
+#include "server/secret.h"
 
 #define SA struct sockaddr
 #define SERVER 0 //Macro for KDF (do not change this macro for this side) 

@@ -13,11 +13,10 @@ are in crypto.c.
 */
 #ifndef CRYPTO_H
 #define CRYPTO_H
-#include<math.h>
+#include <stdint.h>
 #include <stdint.h>
 #include <string.h>
-#include "monocypher.h"
-#include "random.h"	//PRNG
+#include <math.h>
 
 /////////////////
 /// PADME ///

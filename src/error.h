@@ -16,7 +16,8 @@ that ends program and returns error code value
 #define ERROR_H
 #include <stdio.h>
 #include <stdlib.h>
-//defining error threw Macros to use them in codes
+
+//Defining error threw Macros to use them in codes
 #define OK 0
 #define ERROR_WSA 1
 #define ERROR_SOCKET_CREATION 2
@@ -32,6 +33,7 @@ that ends program and returns error code value
 #define ERROR_IP_INPUT 12
 #define MESSAGE_ALTERED 13
 #define UNEQUAL_MAC 14
+#define WRONG_PIN 15
 /*
 This function purpose is to print errors in main code`s
 You can choose where to print error stderr or stdout by switching 

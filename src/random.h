@@ -14,14 +14,11 @@ are in random.c.
 #ifndef RANDOM_H
 #define RANDOM_H
 #include <stdint.h>
-#ifdef _WIN32
-    #define _CRT_RAND_S //rand_s
+#ifdef _WIN32 //Windows Libs
     #include <stdlib.h>
-//Linux Libs
-#else
+#else //Linux Libs
     #include <bsd/stdlib.h>
 #endif
-#include "error.h"// all errors defined + function proto
 
 //////////////////////////////////////////
 /// Random numbers generator ///

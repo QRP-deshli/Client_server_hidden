@@ -5,7 +5,12 @@
 // Technical University of Kosice //
 // 19.11.2024                     //
 // Nikita Kuropatkin              //
-#include"random.h"
+
+#ifdef _WIN32 //Macro for rand_s(Windows OS)
+    #define _CRT_RAND_S //rand_s
+#endif
+#include "error.h"// all errors defined + function proto
+#include "random.h"
 
 //////////////////////////////////////////
 /// Random numbers generator ///

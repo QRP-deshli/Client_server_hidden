@@ -16,8 +16,6 @@ are in addition.c.
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <error.h>
-#define EXIT "exit" // stop word, if someone use it in conversation, it will end
 
 ////////////////////////
 /// Clearing input   ///

@@ -27,7 +27,6 @@ are in network.c.
     #include <sys/socket.h> 
     #include <sys/types.h>
 #endif
-#include "error.h" //all errors defined + function proto
 
 #ifdef _WIN32// defining macro for address length(using different types in WIN and LINUX)
     #define LEN int 
