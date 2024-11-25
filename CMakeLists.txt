@@ -27,7 +27,7 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/Execute`s)
 add_executable(server server.c ${LIBS_SRC})
 
 # Add the client executable
-add_executable(client client.c ${LIBS_SRC})  # Include Libs for the client as well
+add_executable(client client.c ${LIBS_SRC} src/pin.c)  # Include Libs for the client as well
 
 # Conditional library linking based on the platform
 if(WIN32)

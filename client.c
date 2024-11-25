@@ -84,10 +84,9 @@ Version 0.1 - basic functionality;
 #include "random.h"
 #include "crypto.h"
 #include "parameters.h"
-#include "client/secret.h"
 #include "error.h"
+#include "pin.h"
 
-#define PINSZ 6   // PIN size
 #define IPSZ 16   // Ip size
 #define IP "127.0.0.1" // Ip address of the server
 
@@ -174,7 +173,14 @@ void chat(uint8_t* secret,int sockfd){
     // Initialization of an AEAD states:
     crypto_aead_init_x(&ctx_us, secret, nonce_us);
     crypto_aead_init_x(&ctx_thm, secret, nonce_thm);
+    crypto_wipe(secret, KEYSZ); // Wiping original SK
+    /*
+      AEAD structure provide dynamic re-keying with memory wipe of previous key,
+      but it would not wipe original key, that were used for initializing of AEAD structure,
+      so we need to wipe it manually after initialization(read Monocypher manual for further explanation)
+    */
 
+    // Chat loop:
      while (1) {
         // Clear buffers 
         memset(buff, 0, MAX);
@@ -183,7 +189,6 @@ void chat(uint8_t* secret,int sockfd){
         // Recieve message to send
         printf("To server: ");
         if (fgets(plain, sizeof(plain), stdin) == NULL) {
-            crypto_wipe(secret, KEYSZ); //wiping key before aborting
             exit_with_error(ERROR_GETTING_INPUT, "Error reading input");
         }
 
@@ -219,7 +224,6 @@ void chat(uint8_t* secret,int sockfd){
 
         // Decrypt and authenticate the message from the server
         if (crypto_aead_read(&ctx_thm, (uint8_t*)plain, mac_thm, NULL, 0,(uint8_t*)buff, MAX) == -1) {
-            crypto_wipe(secret, KEYSZ); //wiping key before aborting
             exit_with_error(MESSAGE_ALTERED, "Last received message was altered, exiting"); // if the message was altered during transmission
         }
 
@@ -238,25 +242,6 @@ void chat(uint8_t* secret,int sockfd){
 }
 ///////////////////////////////////////////////////
 ///////////////////////////////////////////////////
-void pin_cheker(uint8_t *plain_key){
-    char pin[IPSZ]; // bigger size for checking
-    uint8_t hashed_pin[KEYSZ]; //hashed value of pin
-
-    printf("Enter PIN: ");
-    fgets(pin,IPSZ,stdin); // getting pin
-    int len = strlen(pin)-1; // length of PIN client entered
-
-    // Buffer overflow or PIN longer that it suppose to be, abort
-    if (pin[len] != '\n' || len != PINSZ) {
-        exit_with_error(WRONG_PIN,"You entered wrong PIN");
-    }
-
-    crypto_blake2b(hashed_pin, KEYSZ, (uint8_t*)pin, PINSZ); //hashing entered pin
-
-    for (int i = 0; i < KEYSZ; i++) {
-    plain_key[i] = key_original[i] ^ hashed_pin[i];
-    }
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 /// Key exchange with x25519 + KDF with Blake2, inverse mapping of elligator         ///
@@ -306,6 +291,7 @@ void key_exc_ell(int sockfd) {
 
     // Compute keyed MAC of our shared key
     crypto_blake2b_keyed(mac_us, sizeof(mac_us), plain_key, sizeof(plain_key), shared_key, sizeof(shared_key));
+    crypto_wipe(plain_key,KEYSZ); //wiping plain_key from memory
     
     // Send padded MAC of shared key(authentication of the sides)
     pad_array(mac_us, padded_mac_us,sizeof(mac_us), sizeof(padded_mac_us));// padding our MAC
@@ -321,8 +307,6 @@ void key_exc_ell(int sockfd) {
     }
     
     chat(shared_key,sockfd);
-    // Wiping secrets
-    crypto_wipe(shared_key, KEYSZ);
 }
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////

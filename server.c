@@ -92,12 +92,13 @@ Version 0.1 - basic functionality;
 #define SERVER 0 //Macro for KDF (do not change this macro for this side) 
 
 //////////////////////////////////////////
-/// Socket opener ///
+/// Socket opener                      ///
 //////////////////////////////////////////
 /*
 This function purpose is to open sockets for WIN and LIN OS
 Return value of this function is connection file descriptor (ID of connection)
-Also input variables are port number and server IP
+Also input variables are port number and sockfd, 
+that will be assigned value of file descriptor of socket(ID of socket)
 */
 int sockct_opn(int *sockfd,int port){
     // Initialization for sockets win
@@ -147,11 +148,12 @@ int sockct_opn(int *sockfd,int port){
     return connfd;
 
 }
+//////////////////////////////////////////
+//////////////////////////////////////////
 
-
-///////////////////////////////////////////////////
+//////////////////////////////////////////////
 /// Client-server communication "chatting" ///
-///////////////////////////////////////////////////
+//////////////////////////////////////////////
 void chat(uint8_t* secret,int sockfd)
 {
     // Creating variables
@@ -191,8 +193,15 @@ void chat(uint8_t* secret,int sockfd)
 
     //Initialization of an AEAD states:
     crypto_aead_init_x(&ctx_us, secret, nonce_us);
-    crypto_aead_init_x(&ctx_thm, secret, nonce_thm);    
+    crypto_aead_init_x(&ctx_thm, secret, nonce_thm);
+    crypto_wipe(secret, KEYSZ); // Wiping original SK
+    /*
+      AEAD structure provide dynamic re-keying with memory wipe of previous key,
+      but it would not wipe original key, that were used for initializing of AEAD structure,
+      so we need to wipe it manually after initialization(read Monocypher manual for further explanation)
+    */
 
+    // Chat loop:    
     while (1) {
 
         //Clearing vars
@@ -259,9 +268,9 @@ void chat(uint8_t* secret,int sockfd)
 ///////////////////////////////////////////////////
 ///////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 /// Key exchange with x25519 + KDF with Blake2, inverse mapping of elligator  ///
-////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 void key_exc_ell(int sockfd) {
     // Creating variables
     uint8_t your_sk[KEYSZ]; //your secret key
@@ -319,9 +328,6 @@ void key_exc_ell(int sockfd) {
 
     // Main chat loop
     chat(shared_key,sockfd);
-
-    // Clearing shared key
-    crypto_wipe(shared_key, KEYSZ);
 }
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -332,7 +338,7 @@ void key_exc_ell(int sockfd) {
 int main(int argc, char *argv[]) {
     int port = PORT;
 
-    /*arguments in main providing user to change default Port*/
+    /*Arguments in main providing user to change default Port*/
     if (argc == 2 && argv[1][0] != '\0') {//checking if arguments exsist & not empty
         if(strcmp(argv[1],"/h") == 0)help_print(SERVER,PORT,NULL,MAX);//print help
         port =  atoi(argv[1]); //redefining var to users port

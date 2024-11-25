@@ -8,7 +8,7 @@ CFLAGS = -Wall -Wextra -Iinclude -I$(SRC_DIR)  # Add -I$(SRC_DIR) to search in t
 SRC_DIR = ../src
 
 # Source files from src directory
-SOURCES = $(SRC_DIR)/monocypher.c 
+SOURCES = $(SRC_DIR)/monocypher.c $(SRC_DIR)/config.c $(SRC_DIR)/pin.c
 
 # Output binary names
 BINS = pin_changer
