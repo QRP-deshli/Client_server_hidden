@@ -13,6 +13,8 @@ include_directories(../src)  # Adjust path to Monocypher and other headers
 # Add the Monocypher and other sources files
 set(LIBS_SRC
     ../src/monocypher.c  # Correct path to the Monocypher source file
+    ../src/pin.c
+    ../src/config.c
 )
 
 # Set output directory for executables
