@@ -3,7 +3,7 @@
 // Version 0.1                    //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 19.11.2024                     //
+// 26.11.2024                     //
 // Nikita Kuropatkin              //
 
 /*
@@ -33,10 +33,10 @@ set to CHANGE_PIN if you want to change pin for key(delete old pin and apply new
 */
 #define SECURE_KEY 0
 #define CHANGE_PIN 1
-#define MODE SECURE_KEY
+#define MODE CHANGE_PIN
 
-uint8_t old_pin[PINSZ] = {'1','2','3','4','5','6'}; // old pin for client
-uint8_t new_pin[PINSZ] = {'1','2','3','4','5','6'}; // new pin for client
+uint8_t old_pin[] = {'1','2','3','9','9','9'}; // old pin for client
+uint8_t new_pin[] = {'9','9','9','9','9','9'}; // new pin for client
 
 //////////////////////////////
 /// Secured key printer    ///
@@ -50,12 +50,12 @@ void print_key(uint8_t *finish_key){
 	printf("(Actual authentication key can be accessed by xoring the pin to this value)\n");
 	printf("Replace variable in src/client/secret.h by this value:\n");
 
-	printf("uint8_t secured_key[32] = {\n");
+	printf("static uint8_t secured_key[32] = {\n");
 	/*
 	Loop for printing secured key in beautified form,
 	whole loop can be changed to standart printing every element of finish_key:
 	for(int i = 0; i< HASHSZ;i++)printf("%02X",finish_key[i])
-	*/
+	*/	
 	for (int i = 0; i < HASHSZ/4; i++) { 
 		printf("\t");
 		for(int j = 0; j < 4; j++) {

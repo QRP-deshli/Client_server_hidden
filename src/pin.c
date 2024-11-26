@@ -23,7 +23,7 @@
  needs to be set as a plain key
  (same key as server uses, typically key, that wasn`t secured by PIN)).
 */
-static uint8_t salt[SALTSZ] = {
+uint8_t salt[SALTSZ] = {
     0xF3,0x47,0x75,0xC8,
     0xEE,0x2B,0x9D,0x1D,
     0x3A,0xE3,0x90,0xFA,
@@ -66,19 +66,18 @@ void hashing_pin(uint8_t *pin, uint8_t *hashed_pin) {
         .salt      = salt,                  /* Salt for the PIN */
         .pass_size = PINSZ,                 /* PIN length */
         .salt_size = SALTSZ                 /* salt length */
-    };
+    };       
     crypto_argon2_extras extras = {0};   /* Extra parameters unused */
 
     void *work_area = ALLOCATE_WORK_AREA((size_t)BLOCK_AMOUNT * 1024);
     if (work_area == NULL) {
         exit_with_error(ALLOCATION_ERROR,"Memory allocation failed");
-        crypto_wipe(pin, sizeof(pin));//wiping PIN, cause it`s not longer needed
+        crypto_wipe(pin, PINSZ);//wiping PIN, cause it`s not longer needed
     }
     else {
-        crypto_argon2(hashed_pin, KEYSZ, work_area,
+        crypto_argon2(hashed_pin, HASHSZ, work_area,
                       config, inputs, extras);
-
-        crypto_wipe(pin, sizeof(pin)); //wiping PIN, cause it`s not longer needed
+        crypto_wipe(pin, PINSZ); //wiping PIN, cause it`s not longer needed
         FREE_WORK_AREA(work_area); //free memory after usage of Argon
     }
 }
