@@ -9,6 +9,7 @@
 #include"crypto.h" //Crypto primitievs
 #include "monocypher.h"
 #include "random.h" //CSPRNG
+
 /*Two next Macros are used for easier understanding of code,
 some functions have different function order or print different
 strings depending on which side called it(Server or Client)*/
@@ -37,7 +38,6 @@ Padding of array(copying to an array of bigger size
 and additional space is filled with random data)
 */
 void pad_array(uint8_t* array, uint8_t* pad_array, int og_size, int new_size) {
-
   memcpy(pad_array, array, og_size);
   if (new_size > og_size)random_num(&pad_array[og_size], new_size-og_size);
 
@@ -61,19 +61,23 @@ order for a specific side(server and client),basically it
 defines what side called this function
 */
 void kdf(uint8_t *shared_key, uint8_t *your_sk, uint8_t *their_pk, int keysz, int side){
-    uint8_t shared_secret[keysz]; //raw shared key
-    uint8_t your_pk[keysz]; //your PK
+    uint8_t shared_secret[keysz]; // Raw shared key
+    uint8_t your_pk[keysz]; // Your PK
     // Compute PK(again) but without inverse mapping
     crypto_x25519_dirty_small(your_pk, your_sk);
         
     // Compute shared secret
     crypto_x25519(shared_secret, your_sk, their_pk);
 
-    // KDF with blake2
+    // KDF with Blake2
     crypto_blake2b_ctx ctx;
     crypto_blake2b_init(&ctx, keysz);
     crypto_blake2b_update(&ctx, shared_secret, keysz);
-    if(side == SERVER){
+
+    /*
+    Different order for Client`s and Server`s key
+    */
+    if(side == SERVER){ 
     crypto_blake2b_update(&ctx, your_pk, keysz);
     crypto_blake2b_update(&ctx, their_pk, keysz);
     }
@@ -83,7 +87,7 @@ void kdf(uint8_t *shared_key, uint8_t *your_sk, uint8_t *their_pk, int keysz, in
     }
     crypto_blake2b_final(&ctx, shared_key);    // Shared key for encryption
         
-    //cleaning
+    // Cleaning raw shared secret
     crypto_wipe(shared_secret, keysz);
 }
 ///////////////////////////////

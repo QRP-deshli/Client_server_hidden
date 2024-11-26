@@ -17,6 +17,7 @@
 
 #define ALLOCATE_WORK_AREA(size) malloc(size) //function to allocate memory for Argon`s work_area
 #define FREE_WORK_AREA(ptr)      free(ptr) //function to free memory of Argon`s work_area
+
 /*
  Salt for hashing(can be changed, but you`ll need to update secured_key
  with pin_changer.c(MODE = 0) + secured_key in src/client/secret.h

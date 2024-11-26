@@ -8,7 +8,7 @@
 
 /* 
 This header file declares functions for securing authentication key by PIN
-for a client-server application. Function definitions
+for a client-server application. Function bodies
 are in pin.c. Also this header is in use by pin_changer.c program, 
 that helps to generate keys secured by PIN 
 */
@@ -18,12 +18,12 @@ that helps to generate keys secured by PIN
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include "parameters.h" //for consisent sizes of hash and key
+#include "parameters.h" //for consitent sizes of hash and key
+
 /*
 Produced value of Hash of PIN should be equal to key size, 
 thats why macro below is mapped to KEYSZ(defined in parameters.h size of keys)
 */
-
 #define PINSZ 6 //Size of PIN
 #define HASHSZ KEYSZ //Size of Hash(Will be used in pin.c and pin_changer.c)
 

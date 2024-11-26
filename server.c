@@ -17,7 +17,9 @@ Incremental AEAD with this two algorithms:
     Poly1305 - one-time MAC;
 Blake2b - hash function used for key derivation;
 X25519 - function for key exchange(uses Curve25519);
-Crypto_wipe - function for constant time memory wipe.
+Argon2i - algorithm for hashing passwords or kdf based on hash value of key;
+Crypto_wipe - function for memory wipe;
+Crypto_verify16 - function for constant time comparison;
 Stegano:
 Elligator 2 - algorithm that provides indistinguishability of public keys,
 that will be used in key exchange;
@@ -88,7 +90,7 @@ Version 0.1 - basic functionality;
 #include "parameters.h"
 #include "server/secret.h"
 
-#define SA struct sockaddr
+#define SA struct sockaddr //Struct for TCP/IP functions
 #define SERVER 0 //Macro for KDF (do not change this macro for this side) 
 
 //////////////////////////////////////////
@@ -101,7 +103,7 @@ Also input variables are port number and sockfd,
 that will be assigned value of file descriptor of socket(ID of socket)
 */
 int sockct_opn(int *sockfd,int port){
-    // Initialization for sockets win
+    // Initialization for sockets WIN
     init_sock();
  
     // Create variables
@@ -112,12 +114,13 @@ int sockct_opn(int *sockfd,int port){
     *sockfd = socket(AF_INET, SOCK_STREAM, 0);
     sock_check(*sockfd);//check socket
     
-    memset(&servaddr, 0, sizeof(servaddr));
+    memset(&servaddr, 0, sizeof(servaddr)); // Clear struct for further usage
 
     // Assign IP, PORT
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(port);
+
     // Bind the socket
     if (bind(*sockfd, (SA*)&servaddr, sizeof(servaddr)) == -1){// Checking for error
         sockct_cls(*sockfd);
@@ -217,7 +220,7 @@ void chat(uint8_t* secret,int sockfd)
 
         // Decrypt and authenticate the message from the server
         if (crypto_aead_read(&ctx_thm, (uint8_t*)plain, mac_thm, NULL, 0,(uint8_t*)buff, MAX) == -1) {
-            exit_with_error(MESSAGE_ALTERED, "Last received message was altered, exiting"); // if the message was altered during transmission
+            exit_with_error(MESSAGE_ALTERED, "Last received message was altered, exiting"); //If the message was altered during transmission
         }
 
         //Insert terminator at the actual end of string to avoid showing another garbage
@@ -228,7 +231,7 @@ void chat(uint8_t* secret,int sockfd)
         // Print decrypted message
         printf("    From client: %s", plain);
         
-        //Check for stop-word
+        // Check for stop-word
         if(exiting("Client", plain) == 1)break; 
 
         // Clear buffers
@@ -269,7 +272,8 @@ void chat(uint8_t* secret,int sockfd)
 ///////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////
-/// Key exchange with x25519 + KDF with Blake2, inverse mapping of elligator  ///
+///       Key exchange with x25519 + KDF with Blake2, inverse mapping         ///
+///       of Elligator 2 and MAC side authentication with long-term SK        ///
 /////////////////////////////////////////////////////////////////////////////////
 void key_exc_ell(int sockfd) {
     // Creating variables
@@ -326,30 +330,33 @@ void key_exc_ell(int sockfd) {
         exit_with_error(UNEQUAL_MAC,"Other side isn`t legit, aborting");
     }
 
-    // Main chat loop
-    chat(shared_key,sockfd);
+    chat(shared_key,sockfd); //Entering "chatting" stage with derived shared key
 }
-////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////
 /// Main for socket creation ///
 ///////////////////////////////////
 int main(int argc, char *argv[]) {
-    int port = PORT;
+    int port = PORT; //Copy default port in case user didn`t provided custom port
 
-    /*Arguments in main providing user to change default Port*/
-    if (argc == 2 && argv[1][0] != '\0') {//checking if arguments exsist & not empty
-        if(strcmp(argv[1],"/h") == 0)help_print(SERVER,PORT,NULL,MAX);//print help
-        port =  atoi(argv[1]); //redefining var to users port
-        if(!(port > 1024 && port <= 65535))exit_with_error(ERROR_PORT_INPUT,"Invalid port");//Checking port
+    /*
+    Next part of code handles arguments in main that provide user to change 
+    default IP of server(loopback) and port
+    */
+    if (argc == 2 && argv[1][0] != '\0') { //Checking if arguments exsist & Port/Help argument is not empty
+
+        if(strcmp(argv[1],"/h") == 0)help_print(SERVER,PORT,NULL,MAX); //print help
+
+        port =  atoi(argv[1]); //Changing var value to user-defined port
+        if(!(port > 1024 && port <= 65535))exit_with_error(ERROR_PORT_INPUT,"Invalid port"); //Checking port
     }
 
     int sockfd;
-    int connfd = sockct_opn(&sockfd, port);
+    int connfd = sockct_opn(&sockfd, port); // ID of connection
 
-    // Function for chat
-    key_exc_ell(connfd);
+    key_exc_ell(connfd); //Entering "key exchange" stage
 
     sockct_cls(sockfd);
 

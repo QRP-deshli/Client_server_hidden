@@ -13,8 +13,16 @@ samotnu existenciu komunikacie pomocou eliminacie tzv. "metadat".
 
 Pouzite bloky:
 ------------------
-ChaCha20: Prudova sifra, ktora sa pouziva na sifrovanie sprav medzi klientom a
-serverom.
+AEAD (ChaCha20 + Poly): Funkcia, ktora zarucuje sifrovanie dat a ich 
+autentifikaciu naraz.
+Pouzita implementacia vyuziva dva zakladne bloky:
+
+ChaCha20: Prudova sifra, ktora sa pouziva na sifrovanie sprav medzi klientom 
+a serverom.
+
+Poly1305: Funkcia na generovanie jednorazovej hodnoty 
+MAC (message authentication code), tzv. "tag", na zaistenie integrity 
+posielanych dat.
 
 X25519: Algoritmus na vymenu klucov zalozeny na eliptickej krivke Curve25519. V
 tomto programe sa pouziva funkcia crypto_x25519_dirty_small, ktorá ku
@@ -26,6 +34,11 @@ Blake2b: Hasovacia funkcia zvolena na implementaciu KDF (Key Derivation
 Function), teda na odvodenie spolocneho kluca po vymene klucov medzi dvoma
 stranami.
 
+Argon2i: Funkcia na hashovanie hesiel. Bezi v konstantnom case, co ju robi 
+odolnou voci utokom postrannymi kanalami.
+Zaroven je narocna na hardware, co vyrazne spomaluje metodu odhadovania hesla 
+utokom hrubou silou.
+
 Elligator 2: Tento blok je pouzity na zabezpecenie steganografie v programe.
 Verejny kluc, ktory bol vygenerovany, je pomocou Elligatora namapovany na
 skalar. Dovodom je, ze verejny kluc (pri sifrovani na zaklade eliptickej krivky
@@ -34,7 +47,8 @@ analyzovane a mozu prezradit, ze prebieha vymena klucov, co je neziaduce. Dve z
 tychto moznosti pre analyzu vieme odstranit pomocou Elligatora 2:
 
 (1) Overenie rovnice krivky: V pripade Curve25519 sa to nevyplati, pretoze
-nepracujeme s hodnotou "y".(2) Overenie, ci ma rovnost x^3 + 486662x^2 + x mod
+nepracujeme s hodnotou "y".
+(2) Overenie, ci ma rovnost x^3 + 486662x^2 + x mod
 (255^19) odmocninu: Ak posielame bod na krivke, tato rovnost bude mat odmocninu
 so 100% pravdepodobnostou, ale ked posielame skalar (pseudo-nahodny), tato
 pravdepodobnost klesne na 50%. Preto chceme bod na krivke namapovat na skalar,
@@ -53,7 +67,11 @@ sprav a skryje metadata spojene s komunikaciou.
 
 Algoritmus praci programu:
 ---------------------------
+(0) Server vlastni dlhodobo zdielany kluc (SK), klient ma jeho verziu, 
+zabezpecenu pomocou PIN-kodu.
+
 (1)Na zaciatku sa vytvori socket pre komunikaciu vo funkcii main().
+
 (2)Potom sa zavola funkcia key_exc_ell, ktora zabezpeci vymenu klucov a
 generovanie rovnakeho "shared secret" na oboch stranach v tychto krokoch:
       
@@ -80,8 +98,13 @@ generovanie rovnakeho "shared secret" na oboch stranach v tychto krokoch:
       6)Pomocou funkcie Blake2b sa vygeneruje sifrovaci kluc pre 
       AEAD(ChaCha20 + Poly1305)
       (pri generovani sa pouziju verejne kluce oboch stran a "shared secret").
+      *
+      (7) Na klientskej strane si program vyziada PIN, ktory pomocou funkcie 
+      Argon2i zahasuje a zoxoruje so zabezpecenym zdielanym klucom. 
+      Tym ziska dlhodoby zdielany kluc (SK) v cistej podobe, 
+      teda bez zabezpecenia pomocou PIN-kodu.
      
-      7)Pomocou Blake2b a zdielaneho SK sa vygeneruje MAC, ktory strany 
+      8)Pomocou Blake2b a zdielaneho SK sa vygeneruje MAC, ktory strany 
       preposlu jedna druhej. Tymto overia, ze druha strana je legitimna 
       (kazda strana porovna MAC druhej strany s tym, co vygenerovala samostatne.
       Ak su rovnake, znamena to, ze druha strana vlastni zdielany SK). 
@@ -197,7 +220,9 @@ Minimalna verzia cmake: 3.10
   11 - chyba: nespravne zadane cislo portu.  
   12 - chyba: nespravne zadana ip adresa.  
   13 - chyba: sprava bola modifikovana pocas prenosu.  
-  14 - chyba: ina strana nie je legetimnou(nevlastni spolocny zdielany kluc).  
+  14 - chyba: ina strana nie je legetimnou(nevlastni spolocny zdielany kluc).
+  15 - chyba: klient zadal nespravny PIN pre SK.
+  16 - chyba: alokovanie pamate pre hashovanie zlyhalo.
  ################
 # Zdroje #
 https://elligator.org/

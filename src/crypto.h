@@ -44,8 +44,8 @@ void unpad_array(uint8_t* array, uint8_t* pad_array, int og_size);
 This function purpose is to derive shared key from 
 raw shared key and PKs of both sides.
 The last parameter(int side) is a switch to use specific 
-order for a specific side(server and client),basically it 
-defines what side called this function
+order for a specific side(server and client), basically it 
+defines what side called this function.
 */
 void kdf(uint8_t *shared_key, uint8_t *your_sk, uint8_t *their_pk, int keysz, int side);
 ///////////////////////////////
@@ -54,12 +54,12 @@ void kdf(uint8_t *shared_key, uint8_t *your_sk, uint8_t *their_pk, int keysz, in
 /////////////////////////////////////////
 /// Function for generating hidden PKs///
 /////////////////////////////////////////
-/*This function takes two empty arrays for keys
+/*This function takes two empty arrays for keys, than
 generates tweak for Elligator, next in infinite cycle
 it generates SK and derives PK from it. If that PK
 can be mapped to a random string with Elligator 2 cycle ends,
- if not it continues and new SKs and PKs are generated
- */
+if not - it continues and new SKs and PKs are generated
+*/
 void key_hidden(uint8_t *your_sk, uint8_t *your_pk, int keysz);
 /////////////////////////////////////////
 /////////////////////////////////////////

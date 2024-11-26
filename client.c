@@ -17,7 +17,9 @@ Incremental AEAD with this two algorithms:
     Poly1305 - one-time MAC;
 Blake2b - hash function used for key derivation;
 X25519 - function for key exchange(uses Curve25519);
-Crypto_wipe - function for constant time memory wipe.
+Argon2i - algorithm for hashing passwords or kdf based on hash value of key;
+Crypto_wipe - function for memory wipe;
+Crypto_verify16 - function for constant time comparison;
 Stegano:
 Elligator 2 - algorithm that provides indistinguishability of public keys,
 that will be used in key exchange;
@@ -88,10 +90,14 @@ Version 0.1 - basic functionality;
 #include "pin.h"
 
 #define IPSZ 16   // Ip size
-#define IP "127.0.0.1" // Ip address of the server
+#define IP "127.0.0.1"
+/*
+Default ip address of the server(Loopback), if user didn`t provide other address, 
+while running program, than this address will be used
+*/
 
 #define CLIENT 1 //Macro for KDF (do not change this macro for this side) 
-#define SA struct sockaddr
+#define SA struct sockaddr //Struct for TCP/IP functions
 
 //////////////////////////////////////////
 /// Socket opener ///
@@ -111,7 +117,7 @@ int sockct_opn(int port, char *ip){
     sock_check(sockfd);
 
     // Clearing the server address structure
-    memset(&servaddr, 0, sizeof(servaddr));
+    memset(&servaddr, 0, sizeof(servaddr)); // Clear struct for further usage
 
     // Assign IP, PORT
     servaddr.sin_family = AF_INET;
@@ -243,9 +249,10 @@ void chat(uint8_t* secret,int sockfd){
 ///////////////////////////////////////////////////
 ///////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////
-/// Key exchange with x25519 + KDF with Blake2, inverse mapping of elligator         ///
-////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+///         Key exchange with x25519 + KDF with Blake2, inverse mapping             ///
+///    of Elligator 2 and MAC side authentication with long-term SK(PIN secured)    ///
+///////////////////////////////////////////////////////////////////////////////////////
 void key_exc_ell(int sockfd) {
     // Variables for key-exchange
     uint8_t your_sk[KEYSZ]; //your secret key
@@ -286,7 +293,7 @@ void key_exc_ell(int sockfd) {
     // Compute the shared secret
     kdf(shared_key, your_sk, their_pk, KEYSZ, CLIENT);
 
-    // Asking and checking PIN from user
+    // Asking and checking PIN for SK from user
     pin_cheker(plain_key);
 
     // Compute keyed MAC of our shared key
@@ -306,41 +313,51 @@ void key_exc_ell(int sockfd) {
         exit_with_error(UNEQUAL_MAC,"Other side isn`t legit, aborting");
     }
     
-    chat(shared_key,sockfd);
+    chat(shared_key,sockfd); //Enterening "chatting" stage with derived shared key
 }
-////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
 
 
 ///////////////////////////////////
 /// Main for socket creation ///
 ///////////////////////////////////
 int main(int argc, char *argv[]) {
-    int port = PORT; 
+    int port = PORT; //Copy default port in case user didn`t provided custom port
     char ip[IPSZ];
-    strcpy(ip,IP);
-    /*arguments in main providing user to change default IP of server(loopback) and port*/
-    if (argc >= 2) {// checking if arguments exsist
-        if(argv[1][0] != '\0'){ // Port argument is not empty
+    strcpy(ip,IP); //Copy default IP in case user didn`t provided custom IP
+
+    /*
+    Next part of code handles arguments in main that provide user to change 
+    default IP of server(loopback) and port
+    */
+    if (argc >= 2) { //Checking if arguments exsist
+       
+        if(argv[1][0] != '\0'){ // Port/Help argument is not empty
+
             if(strcmp(argv[1],"/h") == 0)help_print(CLIENT,PORT,IP,MAX);// print help
-            port =  atoi(argv[1]); // redefining var to users port
-            if(!(port > 1024 && port <= 65535))exit_with_error(ERROR_PORT_INPUT,"Invalid port");// checking port
+            
+            port = atoi(argv[1]); //Changing var value to user-defined port
+            if(!(port > 1024 && port <= 65535))exit_with_error(ERROR_PORT_INPUT,"Invalid port"); //Checking port
         }
+       
         if(argc == 3 && argv[2][0] != '\0'){ // IP argument is not empty
-            if(strlen(argv[2]) >= IPSZ)exit_with_error(ERROR_IP_INPUT,"Invalid IP(Too long)");// checking IP
-            strcpy(ip,argv[2]); // copy for checking 
-            ip_check(argv[2]); // check of ip
-            strcpy(ip,argv[2]); // copy valid ip
+            
+            if(strlen(argv[2]) >= IPSZ)exit_with_error(ERROR_IP_INPUT,"Invalid IP(Too long)"); //Checking IP for size
+            
+            strcpy(ip,argv[2]); //Copy for checking format of entered IP
+            ip_check(argv[2]); //Check of ip
+            strcpy(ip,argv[2]); //Copy valid ip
         }
     }
 
     int sockfd = sockct_opn(port,ip);
 
-    key_exc_ell(sockfd);
+    key_exc_ell(sockfd); //Entering "key exchange" stage
 
     sockct_cls(sockfd);
 
-    printf("Program ended, press Enter:");
+    printf("Program ended, press Enter:"); //End of program
     getchar();
     return 0;
 }

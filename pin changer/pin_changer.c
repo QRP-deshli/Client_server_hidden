@@ -33,16 +33,16 @@ set to CHANGE_PIN if you want to change pin for key(delete old pin and apply new
 */
 #define SECURE_KEY 0
 #define CHANGE_PIN 1
-#define MODE CHANGE_PIN
+#define MODE SECURE_KEY
 
-uint8_t old_pin[] = {'1','2','3','9','9','9'}; // old pin for client
-uint8_t new_pin[] = {'9','9','9','9','9','9'}; // new pin for client
+uint8_t new_pin[] = {'7','7','7','7','7','7'}; // old pin for client
+uint8_t old_pin[] = {'7','7','7','7','7','7'}; // new pin for client
 
 //////////////////////////////
 /// Secured key printer    ///
 //////////////////////////////
 /*
-This function takes input key prints to stdout in form of variable,
+This function takes input a variable that points to key and prints it to stdout in form of variable,
  that you need to change in secret.h
 */
 void print_key(uint8_t *finish_key){
@@ -115,6 +115,8 @@ void apply_new_pin(){
 
 	print_key(new_pinned_key); //printing secured key
 }
+////////////////////////////////////////////
+////////////////////////////////////////////
 
 /*main calling functions*/
 int main()
