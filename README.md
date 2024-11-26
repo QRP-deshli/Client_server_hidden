@@ -223,6 +223,7 @@ Minimalna verzia cmake: 3.10
   14 - chyba: ina strana nie je legetimnou(nevlastni spolocny zdielany kluc).
   15 - chyba: klient zadal nespravny PIN pre SK.
   16 - chyba: alokovanie pamate pre hashovanie zlyhalo.
+
  ################
 # Zdroje #
 https://elligator.org/
