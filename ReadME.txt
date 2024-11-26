@@ -206,23 +206,24 @@ Minimalna verzia cmake: 3.10
  ./client.exe 8999 192.134.11.22
 
  # Chybove kody #
-  0 - program bol normalne ukonceny (ziadna chyba sa nevyskytla).  
-  1 - chyba: nepodarilo sa spustit WSA.  
-  2 - chyba: nepodarilo sa vytvorit socket.  
-  3 - chyba: nepodarilo sa spojit socket s IP adresou (binding).  
-  4 - chyba: nepodarilo sa spustit funkciu listen pre socket.  
-  5 - chyba: nepodarilo sa pripojit klienta ku serveru (server accept).  
-  6 - chyba: nepodarilo sa nahrat vstup.  
-  7 - chyba: nepodarilo sa prijat data.  
-  8 - chyba: nepodarilo sa poslat data.  
-  9 - chyba: nepodarilo sa vygenerovat nahodne cisla.  
-  10 - chyba: klientovi sa nepodarilo pripojit ku serveru.  
-  11 - chyba: nespravne zadane cislo portu.  
-  12 - chyba: nespravne zadana ip adresa.  
-  13 - chyba: sprava bola modifikovana pocas prenosu.  
-  14 - chyba: ina strana nie je legetimnou(nevlastni spolocny zdielany kluc).
-  15 - chyba: klient zadal nespravny PIN pre SK.
-  16 - chyba: alokovanie pamate pre hashovanie zlyhalo.
+     0 - program bol normalne ukonceny (ziadna chyba sa nevyskytla).  
+     1 - chyba: nepodarilo sa spustit WSA.  
+     2 - chyba: nepodarilo sa vytvorit socket.  
+     3 - chyba: nepodarilo sa spojit socket s IP adresou (binding).  
+     4 - chyba: nepodarilo sa spustit funkciu listen pre socket.  
+     5 - chyba: nepodarilo sa pripojit klienta ku serveru (server accept).  
+     6 - chyba: nepodarilo sa nahrat vstup.  
+     7 - chyba: nepodarilo sa prijat data.  
+     8 - chyba: nepodarilo sa poslat data.  
+     9 - chyba: nepodarilo sa vygenerovat nahodne cisla.  
+     10 - chyba: klientovi sa nepodarilo pripojit ku serveru.  
+     11 - chyba: nespravne zadane cislo portu.  
+     12 - chyba: nespravne zadana ip adresa.  
+     13 - chyba: sprava bola modifikovana pocas prenosu.  
+     14 - chyba: ina strana nie je legetimnou(nevlastni spolocny zdielany kluc).
+     15 - chyba: klient zadal nespravny PIN pre SK.
+     16 - chyba: alokovanie pamate pre hashovanie zlyhalo.
+
  ################
 # Zdroje #
 https://elligator.org/
