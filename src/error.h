@@ -1,9 +1,9 @@
 // Client-server api              //
 // Error handling                 //
-// Version 0.5.5                  //
+// Version 0.6                    //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 19.11.2024                     //
+// 28.11.2024                     //
 // Nikita Kuropatkin              //
 
 /*
@@ -14,8 +14,6 @@ that ends program and returns error code value
 */
 #ifndef ERROR_H
 #define ERROR_H
-#include <stdio.h>
-#include <stdlib.h>
 
 //Defining errors with macros to use them in codes
 #define OK 0
@@ -35,6 +33,7 @@ that ends program and returns error code value
 #define UNEQUAL_MAC 14
 #define WRONG_PIN 15
 #define ALLOCATION_ERROR 16
+#define TEXT_OVERFLOW 17
 
 //////////////////////////////////////////
 /// Error printing ///

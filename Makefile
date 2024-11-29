@@ -1,16 +1,27 @@
 # Compiler
 CC = gcc
 
-# Compiler flags
-CFLAGS = -Wall -Wextra -Iinclude -I$(SRC_DIR)  # Add -I$(SRC_DIR) to search in the src directory for headers
-
 # Source directory
 SRC_DIR = src
+CLIENT_DIR = src/client
+
+# Compiler flags
+CFLAGS_SERVER = -Wall -Wextra -Iinclude -I$(SRC_DIR)# Add -I$(SRC_DIR) to search in the src directory for headers
+
+# Compiler flags
+CFLAGS_CLIENT = -Wall -Wextra -Iinclude -I$(SRC_DIR) -I$(CLIENT_DIR) # Add -I$(CLIENT_DIR) to search in the src/client directory for headers
 
 # Source files from src directory
-SOURCES = $(SRC_DIR)/monocypher.c $(SRC_DIR)/addition.c \
+SOURCES_SERVER = $(SRC_DIR)/monocypher.c $(SRC_DIR)/addition.c \
 		  $(SRC_DIR)/random.c $(SRC_DIR)/config.c $(SRC_DIR)/crypto.c \
-		  $(SRC_DIR)/network.c 
+		  $(SRC_DIR)/network.c $(SRC_DIR)/compress_decompress.c \
+		  $(SRC_DIR)/lzrw3-a.c
+
+# Source files from src directory and client
+SOURCES_CLIENT = $(SRC_DIR)/monocypher.c $(SRC_DIR)/addition.c \
+		  $(SRC_DIR)/random.c $(SRC_DIR)/config.c $(SRC_DIR)/crypto.c \
+		  $(SRC_DIR)/network.c $(SRC_DIR)/compress_decompress.c \
+		  $(SRC_DIR)/lzrw3-a.c $(CLIENT_DIR)/pin.c
 
 # Output binary names
 BINS = server client
@@ -28,12 +39,12 @@ endif
 all: $(BINS)
 
 # Build server binary
-server: server.c $(SOURCES)
-	$(CC) $(CFLAGS) -o $@$(EXE_EXT) server.c $(SOURCES) $(LIBS)
+server: server.c $(SOURCES_SERVER)
+	$(CC) $(CFLAGS_SERVER) -o $@$(EXE_EXT) server.c $(SOURCES_SERVER) $(LIBS)
 
 # Build client binary
-client: client.c $(SOURCES) $(SRC_DIR)/pin.c
-	$(CC) $(CFLAGS) -o $@$(EXE_EXT) client.c $(SOURCES) $(SRC_DIR)/pin.c $(LIBS)
+client: client.c $(SOURCES_CLIENT) 
+	$(CC) $(CFLAGS_CLIENT) -o $@$(EXE_EXT) client.c $(SOURCES_CLIENT) $(LIBS)
 
 # Clean up build artifacts
 clean:

@@ -1,18 +1,24 @@
 // Client-server api              //
 // Additional functions           //
-// Version 0.5.5                  //
+// Version 0.6                    //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 19.11.2024                     //
+// 28.11.2024                     //
 // Nikita Kuropatkin              //
 
-#include"addition.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "addition.h"
 #include "error.h"
+
 #define EXIT "exit" // Stop-word, if someone use it in conversation, it will end
 
-/*Two next Macros are used for easier understanding of code,
+/*
+Two next Macros are used for easier understanding of code,
 some functions have different function order or print different
-strings depending on which side called it(Server or Client)*/
+strings depending on which side called it(Server or Client)
+*/
 #define SERVER 0 // Macro that defines Server side
 #define CLIENT 1 // Macro that defines Client side
 

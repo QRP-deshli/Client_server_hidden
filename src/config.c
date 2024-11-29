@@ -1,12 +1,15 @@
 // Client-server api              //
 // Error handling                 //
-// Version 0.5.5                  //
+// Version 0.6                    //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 19.11.2024                     //
+// 28.11.2024                     //
 // Nikita Kuropatkin              //
 
-#include"error.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include "error.h"
+
 //DEBUG macro options:
 #define YES 1
 #define NO 0

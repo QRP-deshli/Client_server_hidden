@@ -1,16 +1,19 @@
 // Client-server api              //
 // PIN functions                  //
-// Version 0.5.5                  //
+// Version 0.6                    //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 19.11.2024                     //
+// 28.11.2024                     //
 // Nikita Kuropatkin              //
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "pin.h"
-#include "monocypher.h"
-#include "client/secret.h"
-#include "parameters.h"
-#include "error.h"
+#include "../monocypher.h"
+#include "secret.h"
+#include "../parameters.h"
+#include "../error.h"
 
 #define SALTSZ 16 // Size of dalt
 #define BLOCK_AMOUNT 100000 // Define the number of blocks for Argon2

@@ -1,9 +1,9 @@
 // Client-server api              //
 // Client side                    //
-// Version 0.5.5                  //
+// Version 0.6                    //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 19.11.2024                     //
+// 28.11.2024                     //
 // Nikita Kuropatkin              //
 
 /*
@@ -24,14 +24,18 @@ Stegano:
 Elligator 2 - algorithm that provides indistinguishability of public keys,
 that will be used in key exchange;
 PADME - padding algorithm.
+Additional:
+Program uses LZRW3-A by ROSS WILLIAMS for compressions/decompression 
+of messages;
 This code is client side,
 !REMEMBER! SERVER MUST BE RUNNED FIRST!
 */
 
 /*
 Links:
-https://elligator.org/
-https://monocypher.org/
+Elligator 2: https://elligator.org/
+Monocypher: https://monocypher.org/
+LZRW3-A: http://www.ross.net/compression/lzrw3a.html
 */
 
 /*
@@ -45,6 +49,15 @@ AEAD - authenticated encryption with additional data
 
 //////////Version history//////////
 /*
+Version 0.6 :
+# Added macros for sides(CLIENT and SERVER), which makes code easier to understand
+# Linking mistake corrected (every .h and .c file can be compiled by itself)
+# Structure of project changed: new .h and .c files + folders (client, server)
+# Added compression of inputs by LZRW3-A on both sides
+# Corrected some mistakes (late key wiping - security risk)
+# Additional program (pin_changer) added to project
+# Added method for securing long-term shared key on client’s side by PIN (using Argon2i)
+# Code beautified: more comments, more macros, irrelevant things deleted
 Version 0.5.5 :
 # Added a demo for long-term shared key authentication
 # Corrected mistake with IP handling in memory
@@ -64,18 +77,18 @@ kdf() - key derivation with blake2b; key_hidden() for masking Public keys
 # Added new logic for printing errors, check config.c and error.h for further explanation
 # Corrected mistake with shared key
 Version 0.3 : 
-# Migration of shared functions to shared.c;
-# Correction of macros;
-# Structured error returning code;
-# Corrected problem with memory in number generation;
+# Migration of shared functions to shared.c
+# Correction of macros
+# Structured error returning code
+# Corrected problem with memory in number generation
 Version 0.2 :
-# Added comments, explanations etc. ;
-# Corrected mistake for generating random numbers in Windows ;
-# Functions that needed different code on different platforms created(main code cleared from ifdef) ;
-# Warnings cleared ;
-# PADME padding with random numbers now(Mistake corrected) ;
-# Dealing with buffer overflow added ;
-Version 0.1 - basic functionality;
+# Added comments, explanations etc. 
+# Corrected mistake for generating random numbers in Windows 
+# Functions that needed different code on different platforms created(main code cleared from ifdef) 
+# Warnings cleared 
+# PADME padding with random numbers now(Mistake corrected) 
+# Dealing with buffer overflow added 
+Version 0.1 - basic functionality
 */
 #include <stdio.h>
 #include <string.h>
@@ -87,7 +100,8 @@ Version 0.1 - basic functionality;
 #include "crypto.h"
 #include "parameters.h"
 #include "error.h"
-#include "pin.h"
+#include "client/pin.h"
+#include "compress_decompress.h"
 
 #define IPSZ 16   // Ip size
 #define IP "127.0.0.1"
@@ -140,11 +154,15 @@ int sockct_opn(int port, char *ip){
 ///////////////////////////////////////////////////
 /// Client-server communication "chatting" ///
 ///////////////////////////////////////////////////
-void chat(uint8_t* secret,int sockfd){
-    // Creating variables
+void chat(uint8_t* secret,int sockfd)
+{
+    // Variables for text(plain, compressed, encrypted)
     char buff[MAX]; // Buffer for encrypted text
-    char plain[MAX]; // Buffer for decrypted text
-
+    char plain[TEXT_MAX]; // Buffer for decrypted(plain) text
+    char compr[MAX]; // Buffer for compressed text
+    uint32_t compr_size = 0; // Size of compressed text
+    uint8_t compr_size_bytes[BYTE_ARRAY_SZ]; //Also size of compressed text in uint8_t array(needed for sending)
+    
     // Variables for nonce
     uint8_t nonce_us[NONSZ]; // Our nonce array
     uint8_t nonce_thm[NONSZ]; // Their nonce array
@@ -182,66 +200,88 @@ void chat(uint8_t* secret,int sockfd){
     crypto_wipe(secret, KEYSZ); // Wiping original SK
     /*
       AEAD structure provide dynamic re-keying with memory wipe of previous key,
-      but it would not wipe original key, that were used for initializing of AEAD structure,
+      but it would not wipe original key, that was used for initializing of AEAD structure,
       so we need to wipe it manually after initialization(read Monocypher manual for further explanation)
     */
 
     // Chat loop:
      while (1) {
-        // Clear buffers 
+
+        // Clear vars 
         memset(buff, 0, MAX);
-        memset(plain, 0, MAX);
+        memset(plain, 0, TEXT_MAX);
+        memset(compr, 0, MAX);
+        memset(compr_size_bytes, 0, BYTE_ARRAY_SZ);
+        compr_size = 0;
 
         // Recieve message to send
         printf("To server: ");
-        if (fgets(plain, sizeof(plain), stdin) == NULL) {
+        if (fgets(plain, TEXT_MAX, stdin) == NULL) {
             exit_with_error(ERROR_GETTING_INPUT, "Error reading input");
         }
 
         // Buffer overflow, clear stdin
         if (plain[strlen(plain) - 1] != '\n') {
-            printf("Your message was too long, boundaries is: %d symbols, only those will be sent.\n",MAX);
+            printf("Your message was too long, boundaries is: %d symbols, only those will be sent.\n",TEXT_MAX);
             clear();
             plain[strlen(plain) - 1] = '\n';
         }
 
-        // Encrypt message and generate MAC for it
-        crypto_aead_write(&ctx_us, (uint8_t*)buff, mac_us,NULL, 0,(uint8_t*)plain, MAX);
+        // Compressing inputed text
+        compress_text((unsigned char*)plain, MAX, (unsigned char*)compr, &compr_size); 
+
+        // Encrypt compressed message and generate MAC for it
+        crypto_aead_write(&ctx_us, (uint8_t*)buff, mac_us,NULL, 0,(uint8_t*)compr, compr_size);
 
         // Send padded MAC of our message
         pad_array(mac_us, padded_mac_us, sizeof(mac_us), sizeof(padded_mac_us));// padding our MAC
         write_win_lin(sockfd, padded_mac_us, sizeof(padded_mac_us));
         
-        // Send encrypted message to server
-        write_win_lin(sockfd, (uint8_t*)buff, sizeof(buff));
 
-        if(exiting("Client", plain) == 1)break; //checks for stop-word
+        // Convert size to byte array
+        to_byte_array(compr_size,compr_size_bytes);
+        // Send size of message to other side
+        write_win_lin(sockfd, compr_size_bytes, sizeof(compr_size_bytes));
+        // Send encrypted message to server
+        write_win_lin(sockfd, (uint8_t*)buff, compr_size);
+
+        if(exiting("Client", plain) == 1)break; //Checks for stop-word
 		
         // Clear buffers 
         memset(buff, 0, MAX);
-        crypto_wipe(plain, MAX);// clear plain
+        memset(compr, 0, MAX);
+        crypto_wipe(plain, TEXT_MAX);// clear plain
+        memset(compr_size_bytes, 0, BYTE_ARRAY_SZ);
+        compr_size = 0;
 
         // Get padded MAC of message
         read_win_lin(sockfd, padded_mac_thm, sizeof(padded_mac_thm));
         unpad_array(mac_thm, padded_mac_thm, sizeof(mac_thm)); //Un-pad recieved MAC
 
+        // Get size of message from other side
+        read_win_lin(sockfd, compr_size_bytes, sizeof(compr_size_bytes));
+        // Convert to uint32_t
+        compr_size = from_byte_array( compr_size_bytes, compr_size);
         // Get message from other side
-        read_win_lin(sockfd, (uint8_t*)buff, sizeof(buff));
+        read_win_lin(sockfd, (uint8_t*)buff, compr_size);
 
         // Decrypt and authenticate the message from the server
-        if (crypto_aead_read(&ctx_thm, (uint8_t*)plain, mac_thm, NULL, 0,(uint8_t*)buff, MAX) == -1) {
+        if (crypto_aead_read(&ctx_thm, (uint8_t*)compr, mac_thm, NULL, 0,(uint8_t*)buff, compr_size) == -1) {
             exit_with_error(MESSAGE_ALTERED, "Last received message was altered, exiting"); // if the message was altered during transmission
         }
 
+        // Decompress unencrypted text
+        decompress_text((unsigned char*)compr, (unsigned char*)plain, compr_size);
+
         // Inserting terminator at the actual end of string to avoid showing another garbage
-        for(int j = 0; j < MAX; j++) {
-            if(plain[j] == '\n' && j != MAX-1) plain[j+1] = '\0';
+        for(int j = 0; j < TEXT_MAX; j++) {
+            if(plain[j] == '\n' && j != TEXT_MAX-1) plain[j+1] = '\0';
         }
-        printf("    From Server: %s", plain);
+        printf("    From server: %s", plain);
 
         if(exiting("Server", plain) == 1)break; //checks for stop-word
 
-        crypto_wipe(plain, MAX);// clear plain
+        crypto_wipe(plain, TEXT_MAX);// clear plain
 
     }
 
@@ -259,7 +299,7 @@ void key_exc_ell(int sockfd) {
     uint8_t your_pk[KEYSZ]; //your private key
     uint8_t their_pk[KEYSZ]; //their private key
     uint8_t shared_key[KEYSZ]; //shared key material
-    uint8_t hidden[KEYSZ]; //your PK hiddent with inverse mapping
+    uint8_t hidden[KEYSZ]; //your PK hidden with inverse mapping
     uint8_t plain_key[KEYSZ]; //key for authentication of your side
     
     // Variables for MAC of sides

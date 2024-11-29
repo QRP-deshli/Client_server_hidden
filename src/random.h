@@ -1,9 +1,9 @@
 // Client-server api              //
 // Random number generator        //
-// Version 0.5.5                  //
+// Version 0.6                    //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 19.11.2024                     //
+// 28.11.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
@@ -14,9 +14,11 @@ are in random.c.
 #ifndef RANDOM_H
 #define RANDOM_H
 #include <stdint.h>
-#ifdef _WIN32 //Windows Libs
+/*Windows Libs*/
+#ifdef _WIN32
     #include <stdlib.h>
-#else //Linux Libs
+/*Linux Libs*/
+#else 
     #include <bsd/stdlib.h>
 #endif
 

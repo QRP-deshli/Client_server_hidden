@@ -2,13 +2,16 @@
 CC = gcc
 
 # Compiler flags
-CFLAGS = -Wall -Wextra -Iinclude -I$(SRC_DIR)  # Add -I$(SRC_DIR) to search in the src directory for headers
+CFLAGS = -Wall -Wextra -Iinclude -I$(SRC_DIR) -I$(SRC_DIR_CLI)# Add -I$(SRC_DIR) to search in the src directory for headers
 
 # Source directory
 SRC_DIR = ../src
 
+# Source directory of client
+SRC_DIR_CLI = ../src/client
+
 # Source files from src directory
-SOURCES = $(SRC_DIR)/monocypher.c $(SRC_DIR)/config.c $(SRC_DIR)/pin.c
+SOURCES = $(SRC_DIR)/monocypher.c $(SRC_DIR)/config.c $(SRC_DIR_CLI)/pin.c
 
 # Output binary names
 BINS = pin_changer

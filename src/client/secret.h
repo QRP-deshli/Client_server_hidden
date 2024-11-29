@@ -1,20 +1,20 @@
 // Client-server api              //
-// Long-term shared secret        //
-// Version 0.5.5                  //
+// Long-term shared secret(client)//
+// Version 0.6                    //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 19.11.2024                     //
+// 28.11.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
-This header file contains the long-term shared secret for authenticating both sides
-(it can be changed, but must be updated on both sides).
+This header file contains the long-term shared secret secured by PIN 
+and will be used by client for authentication of other side.
 */
 #ifndef SECRET_H
 #define SECRET_H
 #include <stdint.h>
 
-//Long-term shared secret for both sides
+//Long-term shared secret secured by PIN
 static uint8_t secured_key[32] = {
         0xC0,0xE8,0x39,0xF5,
         0xE2,0xAD,0xB4,0xCC,

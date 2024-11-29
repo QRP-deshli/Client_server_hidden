@@ -1,9 +1,9 @@
 // Client-server api              //
 // Network functions              //
-// Version 0.5.5                  //
+// Version 0.6                    //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 19.11.2024                     //
+// 28.11.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
@@ -14,12 +14,13 @@ are in network.c.
 #ifndef NETWORK_H
 #define NETWORK_H
 #include <stdint.h>
-//Windows Libs
+/*Network libraries(will be used by client and server)*/
+/*Windows Libs*/
 #ifdef _WIN32
     #include <winsock2.h>   
     #include <ws2tcpip.h>   
     #include <io.h>
-//Linux Libs
+/*Linux Libs*/
 #else
     #include <arpa/inet.h>
     #include <netdb.h>
@@ -28,7 +29,11 @@ are in network.c.
     #include <sys/types.h>
 #endif
 
-#ifdef _WIN32 //Defining macro for address length(using different types on WIN and LINUX)
+/*
+Defining macro for address length
+(using different types on WIN and LINUX)
+*/
+#ifdef _WIN32 
     #define LEN int 
 #else
     #define LEN socklen_t
@@ -41,7 +46,7 @@ are in network.c.
 This function purpose is to receive data over open sockets for WIN and LIN OS,
 program exits in case of error.
 */
-void read_win_lin(int sockfd, uint8_t *msg, unsigned int size);
+void read_win_lin(int sockfd, uint8_t *msg, uint32_t size);
 //////////////////////////////////////////
 //////////////////////////////////////////
 
@@ -52,7 +57,7 @@ void read_win_lin(int sockfd, uint8_t *msg, unsigned int size);
 This function purpose is to send data over open sockets for WIN and LIN OS,
 program exits in case of error.
 */
-void write_win_lin(int sockfd, uint8_t *msg, unsigned int size);
+void write_win_lin(int sockfd, uint8_t *msg, uint32_t size);
 //////////////////////////////////////////
 //////////////////////////////////////////
 

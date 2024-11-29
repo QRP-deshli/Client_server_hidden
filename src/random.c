@@ -1,15 +1,15 @@
 // Client-server api              //
 // Random number generator        //
-// Version 0.5.5                  //
+// Version 0.6                    //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 19.11.2024                     //
+// 28.11.2024                     //
 // Nikita Kuropatkin              //
 
 #ifdef _WIN32 //Macro for rand_s(Windows OS)
     #define _CRT_RAND_S //rand_s
 #endif
-#include "error.h"// all errors defined + function proto
+#include "error.h" //All errors defined + function proto
 #include "random.h"
 
 //////////////////////////////////////////

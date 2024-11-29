@@ -1,18 +1,22 @@
 // Client-server api              //
 // Cryptographic functions        //
-// Version 0.5.5                  //
+// Version 0.6                    //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 19.11.2024                     //
+// 28.11.2024                     //
 // Nikita Kuropatkin              //
 
-#include"crypto.h" //Crypto primitievs
+#include <string.h>
+#include <math.h>
+#include "crypto.h" //Crypto primitievs
 #include "monocypher.h"
 #include "random.h" //CSPRNG
 
-/*Two next Macros are used for easier understanding of code,
+/*
+Two next Macros are used for easier understanding of code,
 some functions have different function order or print different
-strings depending on which side called it(Server or Client)*/
+strings depending on which side called it(Server or Client)
+*/
 #define SERVER 0 // Macro that defines Server side
 #define CLIENT 1 // Macro that defines Client side
 

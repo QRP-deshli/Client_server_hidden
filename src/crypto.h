@@ -1,9 +1,9 @@
 // Client-server api              //
 // Cryptographic functions        //
-// Version 0.5.5                  //
+// Version 0.6                    //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 19.11.2024                     //
+// 28.11.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
@@ -14,9 +14,6 @@ are in crypto.c.
 #ifndef CRYPTO_H
 #define CRYPTO_H
 #include <stdint.h>
-#include <stdint.h>
-#include <string.h>
-#include <math.h>
 
 /////////////////
 /// PADME ///
@@ -28,8 +25,10 @@ with bitmask(PADME: https://lbarman.ch/blog/padme/)
 */
 int padme_size(int L);
 
-//Padding of array(copying to an array of bigger size 
-//and additional space is filled with random data)
+/*
+Padding of array(copying to an array of bigger size 
+and additional space is filled with random data)
+*/
 void pad_array(uint8_t* array, uint8_t* pad_array, int og_size, int new_size);
 
 //Reverse of pad_array

@@ -3,7 +3,7 @@
 Doplnkovy program pre projekt *client_server_hidden* sluzi na zabezpecenie 
 zdielaneho tajomstva PIN-kodom na klientskej strane.
 
-2024-26-10, v.1.0.1, Nikita Kuropatkin KEMT FEI TUKE
+2024-26-10, v.0.1, Nikita Kuropatkin KEMT FEI TUKE
 
 Program ponuka dve moznosti spravy zdielaneho kluca:
 

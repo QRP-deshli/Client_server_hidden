@@ -25,7 +25,7 @@ In both modes do not forget to change variables of old_pin[PINSZ] and new_pin[PI
 #include <stdlib.h>
 #include "monocypher.h"
 #include "client/secret.h"
-#include "pin.h"
+#include "client/pin.h"
 
 /*Macos below defines mode of this program
 set MODE to SECURE_KEY if you want to just to secure plain key(key that wasnt secured by pin before)

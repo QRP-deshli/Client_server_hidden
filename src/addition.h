@@ -1,9 +1,9 @@
 // Client-server api              //
 // Additional functions           //
-// Version 0.5.5                  //
+// Version 0.6                    //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 19.11.2024                     //
+// 28.11.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
@@ -14,9 +14,6 @@ are in addition.c.
 */
 #ifndef ADDITION_H
 #define ADDITION_H
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 
 ////////////////////////
 /// Clearing input   ///

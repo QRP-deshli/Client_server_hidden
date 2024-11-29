@@ -2,7 +2,7 @@
 Program pre sifrovanu komunikaciu klient-server so steganografickou podporou
 (Elligator 2 a PADME)
 --------------------------------------------------------------------------------
-2024-11-10, v.1.0.5, Nikita Kuropatkin KEMT FEI TUKE
+2024-28-11, v.0.6, Nikita Kuropatkin KEMT FEI TUKE
 
 Zakladny ciel programu:
 ---------------------------
@@ -64,6 +64,8 @@ ChaCha20 ma velkost 24 bajtov). Hoci tieto informacie same o sebe neodhaluju,
 ci dochadza k vymene klucov, mozu byt pre nahodneho odpocuvaca indikatorom, ze
 prebieha sifrovana komunikacia. PADME tento problem riesi tym, ze zmeni rozmery
 sprav a skryje metadata spojene s komunikaciou.
+Doplnkove:
+LZRW3-A: Algoritmus bezstratovej kompresie, navrhnuty Rossom Williamsom.
 
 Algoritmus praci programu:
 ---------------------------
@@ -102,7 +104,8 @@ generovanie rovnakeho "shared secret" na oboch stranach v tychto krokoch:
       (7) Na klientskej strane si program vyziada PIN, ktory pomocou funkcie 
       Argon2i zahasuje a zoxoruje so zabezpecenym zdielanym klucom. 
       Tym ziska dlhodoby zdielany kluc (SK) v cistej podobe, 
-      teda bez zabezpecenia pomocou PIN-kodu.
+      teda bez zabezpecenia pomocou PIN-kodu. 
+      (Predvolena hodnota PIN-u = "777777")
      
       8)Pomocou Blake2b a zdielaneho SK sa vygeneruje MAC, ktory strany 
       preposlu jedna druhej. Tymto overia, ze druha strana je legitimna 
@@ -116,17 +119,19 @@ generovanie rovnakeho "shared secret" na oboch stranach v tychto krokoch:
 komunikacia:
       
       1)Na zaciatku obe strany vygeneruju nonce a potom ho vyplnia pomocou
-      PAMDE a poslu druhej strane
+      PAMDE a poslu druhej strane.
       
       2)Kazda zo stran nainicializuje dva bloky AEAD: jeden pre autentifikovane
       sifrovanie a druhy pre autentifikovane desifrovanie sprav od druhej strany.
 
-      3)Klient ziska spravu z konzoloveho vstupu, spravu zasifruje a autentifikuje
-      pomocou AEAD (ChaCha20 sa pouzije na sifrovanie a Poly1305 na generovanie 
-      MAC spravy). Nasledne sifrovanu spravu a MAC posle druhej strane.
-      
-      4)Server desifruje a autentifikuje prijatu spravu pomocou AEAD,
-      vykona rovnake kroky ako klient a posle klientovi zasifrovanu spravu a MAC.
+      3)Klient ziska spravu z konzoloveho vstupu, spravu komprimuje pomocou
+      LZRW3-A a potom zasifruje a autentifikuje pomocou AEAD
+      (ChaCha20 sa pouzije na sifrovanie a Poly1305 na generovanie MAC spravy).
+      Nasledne sifrovanu spravu a MAC posle druhej strane.
+
+      4)Server desifruje a autentifikuje prijatu spravu pomocou AEAD, potom ju
+      dekomprimuje pomocou LZRW3-A, vykona rovnake kroky ako klient a posle
+      klientovi zasifrovanu spravu a MAC.
       
       5)Komunikacia sa ukonci, ak niektora zo stran posle stop-slovo
       (predvolena hodnota je "exit") alebo ak niektora zo stran ukonci
@@ -147,7 +152,7 @@ GCC 11.4.0
 Minimalna verzia cmake: 3.10
 
 ####################
- Existuju tri sposoby kompilacie: pomocou CMake, Make alebo prikazu GCC.
+ Existuju dva sposoby kompilacie: pomocou CMake, Make.
  
  #CMAKE# 
 
@@ -223,8 +228,15 @@ Minimalna verzia cmake: 3.10
      14 - chyba: ina strana nie je legetimnou(nevlastni spolocny zdielany kluc).
      15 - chyba: klient zadal nespravny PIN pre SK.
      16 - chyba: alokovanie pamate pre hashovanie zlyhalo.
+     17 - Chyba: rozmer komprimovaneho textu je vacsi ako buffer, kam sa ulozi.
+     (Buffer, kam sa ulozi, je vacsi o 100 znakov ako nekomprimovany text,
+     co znamena, ze LZRW3-A musi rozsirit nekomprimovany text o 100 znakov.
+     To som nevedel dosiahnut pocas svojho testovania. Aj autor naznacoval,
+     ze algoritmus by nemal vyrazne rozsirit povodny text,
+     takze tato chyba ma EXTREMNE malu pravdepodobnost vyskytu.)
 
  ################
 # Zdroje #
 https://elligator.org/
 https://monocypher.org/
+http://www.ross.net/compression/lzrw3a.html 

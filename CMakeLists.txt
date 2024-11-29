@@ -11,23 +11,36 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 include_directories(src)  # Adjust path to Monocypher and other headers
 
 # Add the Monocypher and other sources files
-set(LIBS_SRC
+set(LIBS_SRC_SERVER
     src/monocypher.c  # Correct path to the Monocypher source file
     src/addition.c
     src/random.c
     src/config.c
     src/network.c
     src/crypto.c
+    src/compress_decompress.c
+    src/lzrw3-a.c
+)
+set(LIBS_SRC_CLIENT
+    src/monocypher.c  # Correct path to the Monocypher source file
+    src/addition.c
+    src/random.c
+    src/config.c
+    src/network.c
+    src/crypto.c
+    src/client/pin.c
+    src/compress_decompress.c
+    src/lzrw3-a.c
 )
 
 # Set output directory for executables
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/Execute`s)
 
 # Add the server executable
-add_executable(server server.c ${LIBS_SRC})
+add_executable(server server.c ${LIBS_SRC_SERVER})
 
 # Add the client executable
-add_executable(client client.c ${LIBS_SRC} src/pin.c)  # Include Libs for the client as well
+add_executable(client client.c ${LIBS_SRC_CLIENT})  # Include Libs for the client as well
 
 # Conditional library linking based on the platform
 if(WIN32)

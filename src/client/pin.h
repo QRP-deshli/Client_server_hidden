@@ -1,9 +1,9 @@
 // Client-server api              //
 // PIN functions                  //
-// Version 0.5.5                  //
+// Version 0.6                    //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 19.11.2024                     //
+// 28.11.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
@@ -14,11 +14,8 @@ that helps to generate keys secured by PIN
 */
 #ifndef PIN_H
 #define PIN_H
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stdint.h>
-#include "parameters.h" //for consitent sizes of hash and key
+#include "../parameters.h" //for consitent sizes of hash and key
 
 /*
 Produced value of Hash of PIN should be equal to key size, 

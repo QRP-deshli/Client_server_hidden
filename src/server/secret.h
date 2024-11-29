@@ -1,20 +1,21 @@
 // Client-server api              //
-// Long-term shared secret        //
-// Version 0.5.5                  //
+// Long-term shared secret(server)//
+// Version 0.6                    //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 19.11.2024                     //
+// 28.11.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
-This header file contains the long-term shared secret for authenticating both sides
-(it can be changed, but must be updated on both sides).
+This header file contains the long-term shared secret(server) for authentication of other side.
+It can be changed, but must be updated on both sides
+(Client should use pin_changer.exe to secure plain key).
 */
 #ifndef SECRET_H
 #define SECRET_H
 #include <stdint.h>
 
-//Long-term shared secret for both sides
+//Long-term shared secret for both authenticating sides
 uint8_t key_original[32] = {
 	0xA3,0x80,0x58,0x34,
 	0x7C,0x46,0x6C,0x2D,
