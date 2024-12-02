@@ -26,7 +26,8 @@ are in random.c.
 /// Random numbers generator ///
 //////////////////////////////////////////
 /*
-This function purpose is to generate random bits and fill received array with them.
+This function purpose is to generate random bits 
+and fill received array with them.
 This function works for Win and Lin.
 */
 void random_num(uint8_t * number, int size);

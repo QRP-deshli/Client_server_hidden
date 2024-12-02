@@ -28,18 +28,21 @@ This function purpose is to print errors in main code`s
 You can choose where to print error stderr or stdout by switching 
 macro PRINT. Switch macro DEBUG to YES, to not print anything.
 */
-void exit_with_error(int error, char * err_string){
-        if(PRINT == ERR && DEBUG == NO){
-            fprintf(stderr, "%s.\n", err_string);
-            fprintf(stderr, "%s\n", "Error occured, program exited, press Enter:");
-            getchar();
-        }
-        else if(PRINT == OUT && DEBUG == NO){
-            fprintf(stdout, "%s.\n", err_string); 
-            fprintf(stdout, "%s\n", "Error occured, program exited, press Enter:");
-            getchar();
-        }
-        exit(error);
+void exit_with_error(int error, char * err_string)
+{
+ if(PRINT == ERR && DEBUG == NO){
+    fprintf(stderr, "%s.\n", err_string);
+    if(error != OK)
+        fprintf(stderr, "%s\n", "Error occured, program exited, press Enter:");
+    getchar();
+ }
+ else if(PRINT == OUT && DEBUG == NO){
+    fprintf(stdout, "%s.\n", err_string); 
+    if(error != OK)
+        fprintf(stderr, "%s\n", "Error occured, program exited, press Enter:");
+    getchar();
+    }
+ exit(error);
 }
 //////////////////////////////////////////
 //////////////////////////////////////////

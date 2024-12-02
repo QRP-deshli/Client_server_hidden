@@ -32,8 +32,9 @@ that ends program and returns error code value
 #define MESSAGE_ALTERED 13
 #define UNEQUAL_MAC 14
 #define WRONG_PIN 15
-#define ALLOCATION_ERROR 16
-#define TEXT_OVERFLOW 17
+#define WRONG_PIN_FORMAT 16
+#define ALLOCATION_ERROR 17
+#define TEXT_OVERFLOW 18
 
 //////////////////////////////////////////
 /// Error printing ///

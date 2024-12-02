@@ -43,19 +43,20 @@ Defining macro for address length
 /// Data receiver ///
 //////////////////////////////////////////
 /*
-This function purpose is to receive data over open sockets for WIN and LIN OS,
-program exits in case of error.
+This function purpose is to receive data over open sockets for WIN and 
+LIN OS, program exits in case of error.
 */
 void read_win_lin(int sockfd, uint8_t *msg, uint32_t size);
 //////////////////////////////////////////
 //////////////////////////////////////////
 
+
 //////////////////////////////////////////
 /// Data sender ///
 //////////////////////////////////////////
 /*
-This function purpose is to send data over open sockets for WIN and LIN OS,
-program exits in case of error.
+This function purpose is to send data over open sockets for WIN and 
+LIN OS, program exits in case of error.
 */
 void write_win_lin(int sockfd, uint8_t *msg, uint32_t size);
 //////////////////////////////////////////
@@ -76,12 +77,12 @@ void sockct_cls(int sockfd);
 /// Socket initializer///
 //////////////////////////////
 /*
-This function purpose is to initialize socket for windows,
+This function purpose is to initialize socket for Windows,
 program exits in case of error.
 */
 void init_sock();
 //////////////////////////////
-//////////////////////////////
+/////////////////////////////
 
 ///////////////////////////////
 /// Socket creation checker///

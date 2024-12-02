@@ -48,7 +48,7 @@ This function takes input a variable that points to key and prints it to stdout 
 void print_key(uint8_t *finish_key){
 	printf("!New key-material!\n");
 	printf("(Actual authentication key can be accessed by xoring the pin to this value)\n");
-	printf("Replace variable in src/client/secret.h by this value:\n");
+	printf("Replace (manually) variable in src/client/secret.h by this value:\n");
 
 	printf("static uint8_t secured_key[32] = {\n");
 	/*
