@@ -1,9 +1,9 @@
 // Client-server api              //
 // Compression functions          //
-// Version 0.6                    //
+// Version 0.6.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 28.11.2024                     //
+// 05.12.2024                     //
 // Nikita Kuropatkin              //
 
 #include <string.h>
@@ -13,7 +13,8 @@
 
 /*Macro function to allocate memory for LZRW3a work_area*/
 #define ALLOCATE_WORK_AREA(size) malloc(size) 
-#define FREE_WORK_AREA(ptr)      free(ptr) //free of memory
+/*Macro function to de-allocate work_area memory*/
+#define FREE_WORK_AREA(ptr)      free(ptr) 
 
 /////////////////////////////////////////////
 /// uint32_t to uint8_t array converter   ///
@@ -27,7 +28,7 @@ to get the right binary value in uint8_t array.
 (We need this function to send size of compressed 
 text to other size).
 */
-void to_byte_array(uint32_t number, uint8_t* byte_array){
+void to_byte_array(const uint32_t number, uint8_t* byte_array){
  byte_array[0] = (number >> 24) & 0xFF; 
  byte_array[1] = (number >> 16) & 0xFF;
  byte_array[2] = (number >> 8) & 0xFF;
@@ -49,7 +50,7 @@ in uint32_t number.
 (We need this function to send size of compressed 
 text to other size).
 */
-uint32_t from_byte_array( uint8_t* byte_array, uint32_t number){
+uint32_t from_byte_array( const uint8_t* byte_array, uint32_t number){
  number |= (uint32_t)byte_array[0] << 24;
  number |= (uint32_t)byte_array[1] << 16;
  number |= (uint32_t)byte_array[2] << 8;
@@ -77,7 +78,7 @@ with extremely high entropy (45 unique characters)
 expanded by less than 10%; the output text was 49 characters long.
 LZRW3-A: http://www.ross.net/compression/lzrw3a.html
 */
-void compress_text(unsigned char *input_txt, uint32_t max_size, unsigned  char *output_txt,uint32_t *output_size)
+void compress_text(unsigned char *input_txt, const uint32_t max_size, unsigned  char *output_txt, uint32_t *output_size)
 {
  /*Working memory for LZRW3a compression*/
  void *wrk_mem = ALLOCATE_WORK_AREA(lzrw3a_req_mem()); 
@@ -108,7 +109,7 @@ where the decompressed text will be stored (output_txt).
 The function uses the LZRW3a algorithm for decompression.
 LZRW3-A: http://www.ross.net/compression/lzrw3a.html
 */
-void decompress_text(unsigned char *input_txt,unsigned char *output_txt,uint32_t input_size)
+void decompress_text(unsigned char *input_txt,unsigned char *output_txt, const uint32_t input_size)
 {
  /*Output size(should be for algorithm, but actually unused in program)*/
  uint32_t output_size = 0; 

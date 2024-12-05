@@ -1,9 +1,9 @@
 // Client-server api              //
 // Client side                    //
-// Version 0.6                    //
+// Version 0.6.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 28.11.2024                     //
+// 05.12.2024                     //
 // Nikita Kuropatkin              //
 
 /*
@@ -50,6 +50,13 @@ AEAD - authenticated encryption with additional data
 
 //////////Version history//////////
 /*
+Version 0.6.5 :
+# Added txt file-reader for reading key and salt on clients side
+# Added more macros and created new file for them macros.h
+# Added checking format for inputed PIN
+# Corrected mistake for metadata wiping(PIN wiping after hashing)
+# Usage of key-words const and static for clarification
+# Code beautified: comments and codes is less wider now 
 Version 0.6 :
 # Added macros for sides(CLIENT and SERVER), 
   which makes code easier to understand
@@ -112,8 +119,7 @@ Version 0.1 - basic functionality
 #include "error.h"
 #include "client/pin.h"
 #include "compress_decompress.h"
-
-#define IPSZ 16   // Ip size
+#include "macros.h"
 
 /*
 Default ip address of the server(Loopback), 
@@ -122,8 +128,7 @@ than this address will be used
 */
 #define IP "127.0.0.1"
 
-#define CLIENT 1 //Macro for KDF (do not change this macro for this side) 
-#define SA struct sockaddr //Struct for TCP/IP functions
+#define IPSZ 16   // Ip size
 
 //////////////////////////////////////////
 /// Socket opener ///
@@ -250,7 +255,7 @@ static void chat(uint8_t* secret,int sockfd)
         "only those will be sent.\n",TEXT_MAX);
             clear();
             plain[strlen(plain) - 1] = '\n';
-        }
+    }
 
     // Compressing inputed text
     compress_text((uint8_t*)plain, MAX, (uint8_t*)compr, &compr_size); 
@@ -302,8 +307,8 @@ static void chat(uint8_t* secret,int sockfd)
     decompress_text((uint8_t*)compr, (uint8_t*)plain, compr_size);
 
     /* 
-    Inserting terminator at the actual end 
-    of string to avoid showing another garbage
+     Inserting terminator at the actual end 
+     of string to avoid showing another garbage
     */
     for(int j = 0; j < TEXT_MAX; j++) 
     {
@@ -425,7 +430,7 @@ int main(int argc, char *argv[])
         /*Changing var value to user-defined port*/
         port = atoi(argv[1]); 
         /*Checking port*/
-        if(!(port > 1024 && port <= 65535)){
+        if(!(port > PORT_START && port <= PORT_END)){
             exit_with_error(ERROR_PORT_INPUT,"Invalid port"); 
         }
     }   

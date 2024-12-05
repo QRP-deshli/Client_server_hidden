@@ -31,10 +31,11 @@ set(LIBS_SRC_CLIENT
     src/client/pin.c
     src/compress_decompress.c
     src/lzrw3-a.c
+    src/txt_reader.c
 )
 
 # Set output directory for executables
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/Execute`s)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR})
 
 # Add the server executable
 add_executable(server server.c ${LIBS_SRC_SERVER})

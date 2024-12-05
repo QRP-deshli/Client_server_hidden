@@ -11,8 +11,8 @@ SRC_DIR = ../src
 SRC_DIR_CLI = ../src/client
 
 # Source files from src directory
-SOURCES = $(SRC_DIR)/monocypher.c $(SRC_DIR)/config.c $(SRC_DIR_CLI)/pin.c
-
+SOURCES = $(SRC_DIR)/monocypher.c $(SRC_DIR)/config.c $(SRC_DIR_CLI)/pin.c \
+			$(SRC_DIR)/txt_reader.c
 # Output binary names
 BINS = pin_changer
 

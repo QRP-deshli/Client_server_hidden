@@ -1,9 +1,9 @@
 // Client-server api              //
 // Network functions              //
-// Version 0.6                    //
+// Version 0.6.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 28.11.2024                     //
+// 05.12.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
@@ -46,10 +46,9 @@ Defining macro for address length
 This function purpose is to receive data over open sockets for WIN and 
 LIN OS, program exits in case of error.
 */
-void read_win_lin(int sockfd, uint8_t *msg, uint32_t size);
+void read_win_lin(const int sockfd, uint8_t *msg, const uint32_t size);
 //////////////////////////////////////////
 //////////////////////////////////////////
-
 
 //////////////////////////////////////////
 /// Data sender ///
@@ -58,7 +57,7 @@ void read_win_lin(int sockfd, uint8_t *msg, uint32_t size);
 This function purpose is to send data over open sockets for WIN and 
 LIN OS, program exits in case of error.
 */
-void write_win_lin(int sockfd, uint8_t *msg, uint32_t size);
+void write_win_lin(const int sockfd, uint8_t *msg, const uint32_t size);
 //////////////////////////////////////////
 //////////////////////////////////////////
 
@@ -69,20 +68,20 @@ void write_win_lin(int sockfd, uint8_t *msg, uint32_t size);
 This function purpose is to close existing sockets for WIN and LIN OS,
 program exits in case of error.
 */
-void sockct_cls(int sockfd);
+void sockct_cls(const int sockfd);
 ///////////////////////////////////////////////////
 ///////////////////////////////////////////////////
 
-///////////////////////////////
+/////////////////////////
 /// Socket initializer///
-//////////////////////////////
+/////////////////////////
 /*
 This function purpose is to initialize socket for Windows,
 program exits in case of error.
 */
 void init_sock();
-//////////////////////////////
-/////////////////////////////
+/////////////////////////
+/////////////////////////
 
 ///////////////////////////////
 /// Socket creation checker///
@@ -91,7 +90,7 @@ void init_sock();
 This function purpose is to check if socket was successfully created,
 program exits in case of error.
 */
-void sock_check(int sockfd);
+void sock_check(const int sockfd);
 //////////////////////////////
 //////////////////////////////
 

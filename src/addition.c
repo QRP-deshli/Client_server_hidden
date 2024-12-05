@@ -1,9 +1,9 @@
 // Client-server api              //
 // Additional functions           //
-// Version 0.6                    //
+// Version 0.6.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 28.11.2024                     //
+// 05.12.2024                     //
 // Nikita Kuropatkin              //
 
 #include <stdio.h>
@@ -11,17 +11,17 @@
 #include <stdlib.h>
 #include "addition.h"
 #include "error.h"
+#include "macros.h"
 
 /*Stop-word, if someone use it in conversation, it will end*/
-#define EXIT "exit" 
+#define EXIT "exit"
 
 /*
-Two next Macros are used for easier understanding of code,
-some functions have different function order or print different
-strings depending on which side called it(Server or Client)
-*/
-#define SERVER 0 // Macro that defines Server side
-#define CLIENT 1 // Macro that defines Client side
+ Two next macros define allowed range 
+ of values for octet in IPV4(0.0.0.0 - 255.255.255.255)
+*/ 
+#define IPSTART 0
+#define IPEND 255
 
 ////////////////////////
 /// Clearing input   ///
@@ -48,7 +48,7 @@ Returns value 1 if the word was used, after that
 program(server or client) proceeds in normal
 closing communication session
 */
-int exiting (char *side, char *msg)
+int exiting (const char *side, const char *msg)
 {
 // Exit the loop if the message contains stop-word
  if (strncmp(msg,EXIT,strlen(EXIT)) == 0) {
@@ -87,12 +87,12 @@ void ip_check (char *ip)
  test = atoi(ptr); //One quarter of ipv4 to a number
 
  /*Checking first octet of IP*/
- if(test<0 || test>255)exit_with_error(ERROR_IP_INPUT,"Invalid IP"); 
+ if(test<IPSTART || test>IPEND)exit_with_error(ERROR_IP_INPUT,"Invalid IP"); 
  while (ptr != NULL){
     ptr = strtok(NULL, ".");
     test = atoi(ptr); //Convert one octet of ipv4 to a decimal form
     /*Checking other octets of IP*/
-    if(test<0 || test>255)exit_with_error(ERROR_IP_INPUT,"Invalid IP"); 
+    if(test<IPSTART || test>IPEND)exit_with_error(ERROR_IP_INPUT,"Invalid IP"); 
  }
 }
 ///////////////////////////
@@ -107,7 +107,7 @@ The parameter(int side) is a switch to print specific
 info for a specific side(server and client), basically it 
 defines what side called this function.
 Other parameters represent default values of port, message size and IP*/
-void help_print (int side, int port, char *ip, int max)
+void help_print (const int side, const int port, const char *ip, const int max)
 {
  printf("\n");
  printf("***********************************************************************\n");

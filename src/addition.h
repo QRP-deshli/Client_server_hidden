@@ -1,9 +1,9 @@
 // Client-server api              //
 // Additional functions           //
-// Version 0.6                    //
+// Version 0.6.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 28.11.2024                     //
+// 05.12.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
@@ -36,7 +36,7 @@ Returns value 1 if the word was used, after that
 program(server or client) proceeds in normal
 closing communication session
 */
-int exiting (char *side, char *msg);
+int exiting (const char *side, const char *msg);
 ///////////////////////////
 ///////////////////////////
 
@@ -63,7 +63,7 @@ The parameter(int side) is a switch to print specific
 info for a specific side(server and client), basically it 
 defines what side called this function.
 Other parameters represent default values of port, message size and IP*/
-void help_print (int side, int port, char *ip, int max);
+void help_print (const int side, const int port, const char *ip, const int max);
 ////////////////////////////////
 ////////////////////////////////
 

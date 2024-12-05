@@ -15,13 +15,14 @@ CFLAGS_CLIENT = -Wall -Wextra -Iinclude -I$(SRC_DIR) -I$(CLIENT_DIR) # Add -I$(C
 SOURCES_SERVER = $(SRC_DIR)/monocypher.c $(SRC_DIR)/addition.c \
 		  $(SRC_DIR)/random.c $(SRC_DIR)/config.c $(SRC_DIR)/crypto.c \
 		  $(SRC_DIR)/network.c $(SRC_DIR)/compress_decompress.c \
-		  $(SRC_DIR)/lzrw3-a.c
+		  $(SRC_DIR)/lzrw3-a.c 
 
 # Source files from src directory and client
 SOURCES_CLIENT = $(SRC_DIR)/monocypher.c $(SRC_DIR)/addition.c \
 		  $(SRC_DIR)/random.c $(SRC_DIR)/config.c $(SRC_DIR)/crypto.c \
 		  $(SRC_DIR)/network.c $(SRC_DIR)/compress_decompress.c \
-		  $(SRC_DIR)/lzrw3-a.c $(CLIENT_DIR)/pin.c
+		  $(SRC_DIR)/lzrw3-a.c $(SRC_DIR)/txt_reader.c \
+		  $(CLIENT_DIR)/pin.c
 
 # Output binary names
 BINS = server client

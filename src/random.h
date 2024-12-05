@@ -1,9 +1,9 @@
 // Client-server api              //
 // Random number generator        //
-// Version 0.6                    //
+// Version 0.6.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 28.11.2024                     //
+// 05.12.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
@@ -30,7 +30,7 @@ This function purpose is to generate random bits
 and fill received array with them.
 This function works for Win and Lin.
 */
-void random_num(uint8_t * number, int size);
+void random_num(uint8_t * number, const int size);
 //////////////////////////////////////////
 //////////////////////////////////////////
 

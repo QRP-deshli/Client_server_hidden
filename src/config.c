@@ -1,9 +1,9 @@
 // Client-server api              //
 // Error handling                 //
-// Version 0.6                    //
+// Version 0.6.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 28.11.2024                     //
+// 05.12.2024                     //
 // Nikita Kuropatkin              //
 
 #include <stdio.h>
@@ -28,7 +28,7 @@ This function purpose is to print errors in main code`s
 You can choose where to print error stderr or stdout by switching 
 macro PRINT. Switch macro DEBUG to YES, to not print anything.
 */
-void exit_with_error(int error, char * err_string)
+void exit_with_error(const int error, const char * err_string)
 {
  if(PRINT == ERR && DEBUG == NO){
     fprintf(stderr, "%s.\n", err_string);

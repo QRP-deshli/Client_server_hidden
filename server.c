@@ -1,9 +1,9 @@
 // Client-server api              //
 // Client side                    //
-// Version 0.6                    //
+// Version 0.6.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 28.11.2024                     //
+// 05.12.2024                     //
 // Nikita Kuropatkin              //
 
 /*
@@ -50,6 +50,13 @@ AEAD - authenticated encryption with additional data
 
 //////////Version history//////////
 /*
+Version 0.6.5 :
+# Added txt file-reader for reading key and salt on clients side
+# Added more macros and created new file for them macros.h
+# Added checking format for inputed PIN
+# Corrected mistake for metadata wiping(PIN wiping after hashing)
+# Usage of key-words const and static for clarification
+# Code beautified: comments and codes is less wider now 
 Version 0.6 :
 # Added macros for sides(CLIENT and SERVER), 
   which makes code easier to understand
@@ -113,13 +120,19 @@ Version 0.1 - basic functionality
 #include "parameters.h"
 #include "server/secret.h"
 #include "compress_decompress.h"
+#include "macros.h"
 
-#define SA struct sockaddr //Struct for TCP/IP functions
-#define SERVER 0 //Macro for KDF (do not change this macro for this side) 
+/*
+Backlog for the function listen() -  specifies the maximum number of 
+pending connections (connections that have been initiated by clients 
+but not yet accepted by the server using accept()) that the system 
+will queue for a socket.
+*/
+#define BACKLOG 3
 
-//////////////////////////////////////////
-/// Socket opener                      ///
-//////////////////////////////////////////
+/////////////////////
+/// Socket opener ///
+/////////////////////
 /*
 This function purpose is to open sockets for WIN and LIN OS
 Return value of this function is connection file descriptor 
@@ -158,7 +171,7 @@ static int sockct_opn(int *sockfd,int port)
  }
 
  // Listen for incoming connections
- if (listen(*sockfd, 5) == -1){// Checking if listening failed
+ if (listen(*sockfd, BACKLOG) == -1){// Checking if listening failed
     sockct_cls(*sockfd);
     exit_with_error(ERROR_SOCKET_LISTENING, "Listen failed");
  }
@@ -180,8 +193,8 @@ static int sockct_opn(int *sockfd,int port)
  }
  return connfd;
 }
-//////////////////////////////////////////
-//////////////////////////////////////////
+/////////////////////
+/////////////////////
 
 //////////////////////////////////////////////
 /// Client-server communication "chatting" ///
@@ -437,7 +450,7 @@ int main(int argc, char *argv[])
 
     port =  atoi(argv[1]); //Changing var value to user-defined port
     /*Checking port*/
-    if(!(port > 1024 && port <= 65535))
+    if(!(port > PORT_START && port <= PORT_END))
         exit_with_error(ERROR_PORT_INPUT,"Invalid port"); 
  }
 

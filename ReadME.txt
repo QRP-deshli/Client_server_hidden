@@ -2,7 +2,7 @@
 Program pre sifrovanu komunikaciu klient-server so steganografickou podporou
 (Elligator 2 a PADME)
 --------------------------------------------------------------------------------
-2024-28-11, v.0.6, Nikita Kuropatkin KEMT FEI TUKE
+2024-05-12, v.0.6.5, Nikita Kuropatkin KEMT FEI TUKE
 
 Zakladny ciel programu:
 ---------------------------
@@ -164,8 +164,8 @@ Minimalna verzia cmake: 3.10
       3)Po uspesnom vygenerovani build-suborov pouzite prikaz:
        Windows: "cmake --build ." , Linux: "make" 
 
-      4)Po uspesnom vykonani prikazu sa vytvori adresar "Execute`s",
-      kde budu ulozene server.exe a client.exe. 
+      4)Po uspesnom vykonani prikazu sa vytvoria server.exe a client.exe.
+        (Budu ulozene v korenovom priecenku projektu) 
 
       5)Najprv spustite server a potom klienta.
 
@@ -227,13 +227,17 @@ Minimalna verzia cmake: 3.10
      13 - chyba: sprava bola modifikovana pocas prenosu.  
      14 - chyba: ina strana nie je legetimnou(nevlastni spolocny zdielany kluc).
      15 - chyba: klient zadal nespravny PIN pre SK.
-     16 - chyba: alokovanie pamate pre hashovanie zlyhalo.
-     17 - Chyba: rozmer komprimovaneho textu je vacsi ako buffer, kam sa ulozi.
+     16 - chyba: klient nedodrzial podmienky formatovania pinu.
+     17 - chyba: alokovanie pamate pre hashovanie zlyhalo.
+     18 - chyba: rozmer komprimovaneho textu je vacsi ako buffer, kam sa ulozi.
      (Buffer, kam sa ulozi, je vacsi o 100 znakov ako nekomprimovany text,
      co znamena, ze LZRW3-A musi rozsirit nekomprimovany text o 100 znakov.
      To som nevedel dosiahnut pocas svojho testovania. Aj autor naznacoval,
      ze algoritmus by nemal vyrazne rozsirit povodny text,
      takze tato chyba ma EXTREMNE malu pravdepodobnost vyskytu.)
+     19 - chyba: zlyhalo otvorenie suboru(File not found).
+     20 - chyba: nespravny format data v txt subore.
+     (Data musia byt ulozene v hexadecimalnej podobe).
 
  ################
 # Zdroje #

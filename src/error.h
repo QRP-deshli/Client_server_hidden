@@ -1,9 +1,9 @@
 // Client-server api              //
 // Error handling                 //
-// Version 0.6                    //
+// Version 0.6.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 28.11.2024                     //
+// 05.12.2024                     //
 // Nikita Kuropatkin              //
 
 /*
@@ -35,6 +35,8 @@ that ends program and returns error code value
 #define WRONG_PIN_FORMAT 16
 #define ALLOCATION_ERROR 17
 #define TEXT_OVERFLOW 18
+#define ERROR_OPENING_FILE 19
+#define WRONG_TXT_FORMAT 20
 
 //////////////////////////////////////////
 /// Error printing ///
@@ -44,7 +46,7 @@ This function purpose is to print errors in main code`s
 You can choose where to print error stderr or stdout by switching 
 macro OUT. Switch macro DEBUG to 0, to not print anything.
 */
-void exit_with_error(int error, char * err_string);
+void exit_with_error(const int error, const char * err_string);
 //////////////////////////////////////////
 //////////////////////////////////////////
 

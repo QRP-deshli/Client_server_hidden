@@ -69,6 +69,31 @@
 /*                                                                            */
 /******************************************************************************/
 
+/******************************************************************************/
+/*                             MODIFICATIONS(NK)                              */
+/*     To compile this code without warnings from GCC I needed to add a few   */
+/*     lines, that do nothing and delete keyword "static" before struct       */
+/*     identity:                                                              */
+/*     (Line 121)                                                             */
+/*     #OLD: static struct compress_identity identity                         */
+/*     #Modified: struct compress_identity identity                           */
+/*     (Line 585)                                                             */
+/*     #OLD: #define PS *p++!=*s++                                            */
+/*            PS || PS || PS || PS || PS || PS || PS || PS || PS ||           */
+/*            PS || PS || PS || PS || PS || PS || PS || PS || PS || s++;      */
+/*     #Modified:                                                             */
+/*            #define PS *p++!=*s++                                           */
+/*            long no_op = PS || PS || PS || PS || PS || PS || PS || PS ||    */
+/*            PS || PS || PS || PS || PS || PS || PS || PS || PS || PS || s++;*/
+/*            if(FALSE)no_op++;                                               */
+/*     (Line 648)                                                             */
+/*     #OLD: end_unrolled_loop: if (--unroll) goto begin_unrolled_loop;       */
+/*     #Modified:                                                             */
+/*            end_unrolled_loop: if (--unroll) goto begin_unrolled_loop;      */
+/*            if(FALSE)goto end_unrolled_loop;                                */
+/*                                                                            */
+/******************************************************************************/
+
                             /* INCLUDE FILES                                  */
                             /* =============                                  */
 #include "lzrw.h"
@@ -560,7 +585,7 @@ LOCAL void lzrw3a_compress_compress
              #define PS *p++!=*s++
              long no_op = PS || PS || PS || PS || PS || PS || PS || PS || PS ||
              PS || PS || PS || PS || PS || PS || PS || PS || PS || s++;
-             if(FALSE)no_op++; //NK modified for ingoring warning 
+             if(FALSE)no_op++; //NK 
 
              len=s-p_src-1;
              if (len>bestlen)
@@ -620,7 +645,7 @@ LOCAL void lzrw3a_compress_compress
 
        /* This loop is all set up for a decrement and jump instruction! */
     end_unrolled_loop: if (--unroll) goto begin_unrolled_loop;
-    if(FALSE)goto end_unrolled_loop; //Ignoring warning of compiler :3
+    if(FALSE)goto end_unrolled_loop; //NK 
 
     /* At this point it will nearly always be the end of a group in which     */
     /* case, we have to do some control-word processing. However, near the    */

@@ -1,9 +1,9 @@
 // Client-server api              //
 // Compression functions          //
-// Version 0.6                    //
+// Version 0.6.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 28.11.2024                     //
+// 05.12.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
@@ -29,7 +29,7 @@ to get the right binary value in uint8_t array.
 (We need this function to send size of compressed 
 text to other size).
 */
-void to_byte_array(uint32_t number, uint8_t* byte_array);
+void to_byte_array(const uint32_t number, uint8_t* byte_array);
 /////////////////////////////////////////////
 /////////////////////////////////////////////
 
@@ -46,7 +46,7 @@ in uint32_t number.
 (We need this function to send size of compressed 
 text to other size).
 */
-uint32_t from_byte_array( uint8_t* byte_array, uint32_t number);
+uint32_t from_byte_array(const uint8_t* byte_array, uint32_t number);
 /////////////////////////////////////////////
 /////////////////////////////////////////////
 
@@ -56,20 +56,19 @@ uint32_t from_byte_array( uint8_t* byte_array, uint32_t number);
 /*
 This function takes as input uncompressed text (input_txt), 
 the maximum size that the decompressed text can be (max_size), 
-a pointer to the buffer where the compressed text will be 
-stored (output_txt), and a pointer to its size (output_size).
+a pointer to the buffer where the compressed text 
+will be stored (output_txt), and a pointer to its size (output_size).
 Then, this function compresses input_txt using LZRW3a; 
 the compressed text is written to output_txt.
 If the compressed text is larger than output_txt, the program will exit 
 (highly unlikely, as the buffer is 100 characters larger than input_txt). 
 According to the LZRW3a documentation, the compressed text shouldn’t be 
-drastically larger than the input text. 
-Based on my experiments, text with extremely high entropy 
-(45 unique characters) expanded by less than 10%;
-the output text was 49 characters long.
-LZRW3a: http://www.ross.net/compression/lzrw3a.html
+drastically larger than the input text. Based on my experiments, text 
+with extremely high entropy (45 unique characters) 
+expanded by less than 10%; the output text was 49 characters long.
+LZRW3-A: http://www.ross.net/compression/lzrw3a.html
 */
-void compress_text(unsigned char *input_txt, uint32_t max_size,unsigned  char *output_txt,uint32_t *output_size);
+void compress_text(unsigned char *input_txt, const uint32_t max_size, unsigned  char *output_txt, uint32_t *output_size);
 /////////////////////////
 /////////////////////////
 
@@ -81,9 +80,9 @@ This function takes as input compressed text (input_txt),
 its size (input_size), and a pointer to the buffer 
 where the decompressed text will be stored (output_txt).
 The function uses the LZRW3a algorithm for decompression.
-LZRW3a: http://www.ross.net/compression/lzrw3a.html
+LZRW3-A: http://www.ross.net/compression/lzrw3a.html
 */
-void decompress_text(unsigned char *input_txt,unsigned  char *output_txt,uint32_t input_size);
+void decompress_text(unsigned char *input_txt,unsigned char *output_txt, const uint32_t input_size);
 ///////////////////////////
 ///////////////////////////
 
