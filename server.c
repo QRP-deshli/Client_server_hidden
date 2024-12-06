@@ -56,7 +56,7 @@ Version 0.6.5 :
 # Added checking format for inputed PIN
 # Corrected mistake for metadata wiping(PIN wiping after hashing)
 # Usage of key-words const and static for clarification
-# Code beautified: comments and codes is less wider now 
+# Code beautified: comments and codes is less wider now  
 Version 0.6 :
 # Added macros for sides(CLIENT and SERVER), 
   which makes code easier to understand
@@ -375,17 +375,17 @@ static void key_exc_ell(int sockfd)
  uint8_t mac_us[MACSZ]; 
  /*Keyed MAC of shared key(server), authentication of other side*/
  uint8_t mac_thm[MACSZ]; 
- int pad_size = padme_size(MACSZ);
- uint8_t padded_mac_us[pad_size]; //Our padded MAC
- uint8_t padded_mac_thm[pad_size]; //Their padded MAC
+ int pad_size_mac = padme_size(MACSZ);
+ uint8_t padded_mac_us[pad_size_mac]; //Our padded MAC
+ uint8_t padded_mac_thm[pad_size_mac]; //Their padded MAC
 
  /*Computing size of padded hidden PK and creating variable*/
- pad_size = padme_size(KEYSZ);
- uint8_t pad_your_pk[pad_size]; //your padded hidden PK
- uint8_t pad_hidden[pad_size]; //their padded hidden PK
+ int pad_size_key = padme_size(KEYSZ);
+ uint8_t pad_your_pk[pad_size_key]; //your padded hidden PK
+ uint8_t pad_hidden[pad_size_key]; //their padded hidden PK
 
  // Receive their hidden and padded PK
- read_win_lin(sockfd, pad_hidden, sizeof(pad_hidden));
+ read_win_lin(sockfd, pad_hidden, pad_size_key);
 
  /*
  Un-pad received hidden PK + map the scalar
@@ -398,10 +398,10 @@ static void key_exc_ell(int sockfd)
  key_hidden(your_sk, your_pk, KEYSZ);
 
  // Padding hidden PK
- pad_array(your_pk, pad_your_pk, KEYSZ, pad_size);
+ pad_array(your_pk, pad_your_pk, KEYSZ, pad_size_key);
 
  // Send padded and hidden PK to client
- write_win_lin(sockfd, pad_your_pk, sizeof(pad_your_pk));
+ write_win_lin(sockfd, pad_your_pk, pad_size_key);
 
  // Compute shared secret
  kdf(shared_key, your_sk, their_pk, KEYSZ, SERVER);
@@ -410,14 +410,14 @@ static void key_exc_ell(int sockfd)
  crypto_blake2b_keyed(mac_us, MACSZ, key_original, KEYSZ, shared_key, KEYSZ);
 
  /*Get padded MAC of shared key(authentication of the sides)*/
- read_win_lin(sockfd, padded_mac_thm, sizeof(padded_mac_thm));
+ read_win_lin(sockfd, padded_mac_thm, pad_size_mac);
  /*Un-pad received MAC of other side*/
  unpad_array(mac_thm, padded_mac_thm, MACSZ); 
 
  /*Padding our MAC*/
- pad_array(mac_us, padded_mac_us, MACSZ, sizeof(padded_mac_us));
+ pad_array(mac_us, padded_mac_us, MACSZ, pad_size_mac);
  /*Send padded MAC of shared key(authentication of the sides)*/
- write_win_lin(sockfd, padded_mac_us, sizeof(padded_mac_us));
+ write_win_lin(sockfd, padded_mac_us, pad_size_mac);
 
  // Checking if server is legit(if it owns shared SK)
  if(crypto_verify16(mac_us, mac_thm) == -1){

@@ -346,26 +346,26 @@ static void key_exc_ell(int sockfd)
  uint8_t mac_us[MACSZ]; 
  /*Keyed MAC of shared key(server), authentication of other side*/
  uint8_t mac_thm[MACSZ]; 
- int pad_size = padme_size(MACSZ);
- uint8_t padded_mac_us[pad_size]; //Our padded MAC
- uint8_t padded_mac_thm[pad_size]; //Their padded MAC
+ int pad_size_mac = padme_size(MACSZ);
+ uint8_t padded_mac_us[pad_size_mac]; //Our padded MAC
+ uint8_t padded_mac_thm[pad_size_mac]; //Their padded MAC
 
  /*Computing size of padded hidden PK and creating variable*/
- pad_size = padme_size(KEYSZ);
- uint8_t pad_your_pk[pad_size]; //your padded hidden PK
- uint8_t pad_hidden[pad_size]; //their padded hidden PK
+ int pad_size_key = padme_size(KEYSZ);
+ uint8_t pad_your_pk[pad_size_key]; //your padded hidden PK
+ uint8_t pad_hidden[pad_size_key]; //their padded hidden PK
 
  /*Generate SK and hidden PK*/
  key_hidden(your_sk, your_pk, KEYSZ);
 
  // Padding of hidden PK
- pad_array(your_pk, pad_your_pk, KEYSZ, sizeof(pad_your_pk));
+ pad_array(your_pk, pad_your_pk, KEYSZ, pad_size_key);
 
  // Sending/receiving PK(hidden and padded) (key exchange)
- write_win_lin(sockfd, pad_your_pk, sizeof(pad_your_pk));
+ write_win_lin(sockfd, pad_your_pk, pad_size_key);
 
  // Receiving PK(hidden and padded) (key exchange)
- read_win_lin(sockfd, pad_hidden, sizeof(pad_hidden));
+ read_win_lin(sockfd, pad_hidden, pad_size_key);
 
  /* 
  Return to the actual key-size and mapping scalar 
@@ -386,12 +386,12 @@ static void key_exc_ell(int sockfd)
  crypto_wipe(plain_key,KEYSZ); //wiping plain_key from memory
     
  /*Padding our MAC*/
- pad_array(mac_us, padded_mac_us, MACSZ, sizeof(padded_mac_us));
+ pad_array(mac_us, padded_mac_us, MACSZ, pad_size_mac);
  /*Send padded MAC of shared key(authentication of the sides)*/
- write_win_lin(sockfd, padded_mac_us, sizeof(padded_mac_us));
+ write_win_lin(sockfd, padded_mac_us, pad_size_mac);
 
  // Get padded MAC of shared key(authentication of the sides)
- read_win_lin(sockfd, padded_mac_thm, sizeof(padded_mac_thm));
+ read_win_lin(sockfd, padded_mac_thm, pad_size_mac);
  /*Un-pad received MAC of other side*/
  unpad_array(mac_thm, padded_mac_thm, MACSZ); 
 
