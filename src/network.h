@@ -24,6 +24,7 @@ are in network.c.
 #else
     #include <arpa/inet.h>
     #include <netdb.h>
+    #include <unistd.h>
     #include <netinet/in.h> 
     #include <sys/socket.h> 
     #include <sys/types.h>
