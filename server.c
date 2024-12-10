@@ -201,7 +201,7 @@ static int sockct_opn(int *sockfd,int port)
 //////////////////////////////////////////////
 static void chat(uint8_t* secret,int sockfd)
 {
- // Variables for text(plain, compressed, encrypted)
+  // Variables for text(plain, compressed, encrypted)
  char buff[MAX]; // Buffer for encrypted text
  char plain[TEXT_MAX]; // Buffer for decrypted(plain) text
  char compr[MAX]; // Buffer for compressed text
@@ -212,18 +212,18 @@ static void chat(uint8_t* secret,int sockfd)
  // Variables for nonce
  uint8_t nonce_us[NONSZ]; // Our nonce array
  uint8_t nonce_thm[NONSZ]; // Their nonce array
- int pad_size = padme_size(NONSZ); // Size of padded nonce
+ int pad_size_nonce = padme_size(NONSZ); // Size of padded nonce
  /*New array that will contain padded nonce*/
- uint8_t pad_nonce[pad_size]; 
+ uint8_t pad_nonce[pad_size_nonce]; // Size of padded Nonce
  /*New array that will contain their padded nonce*/
- uint8_t pad_nonce_their[pad_size]; 
+ uint8_t pad_nonce_their[pad_size_nonce]; 
 
  // Variables for MAC
  uint8_t mac_us[MACSZ]; // MAC of our messages
  uint8_t mac_thm[MACSZ]; // MAC of their messages
- pad_size = padme_size(MACSZ);
- uint8_t padded_mac_us[pad_size]; // Our padded MAC
- uint8_t padded_mac_thm[pad_size]; // Their padded MAC
+ int pad_size_mac = padme_size(MACSZ); // Size of padded MAC
+ uint8_t padded_mac_us[pad_size_mac]; // Our padded MAC
+ uint8_t padded_mac_thm[pad_size_mac]; // Their padded MAC
 
  /*AEAD state variables:*/
  /*
@@ -241,11 +241,11 @@ static void chat(uint8_t* secret,int sockfd)
  random_num(nonce_us, NONSZ);
 
  // Pad Nonce
- pad_array(nonce_us, pad_nonce, NONSZ, pad_size);
+ pad_array(nonce_us, pad_nonce, NONSZ, pad_size_nonce);
 
  // Send/recieve nonce
- read_win_lin(sockfd, pad_nonce_their, sizeof(pad_nonce_their));
- write_win_lin(sockfd, pad_nonce, sizeof(pad_nonce));
+ read_win_lin(sockfd, pad_nonce_their, pad_size_nonce);
+ write_win_lin(sockfd, pad_nonce, pad_size_nonce);
 
  //Un-pad Nonce
  unpad_array(nonce_thm, pad_nonce_their, NONSZ);
@@ -271,12 +271,12 @@ static void chat(uint8_t* secret,int sockfd)
     compr_size = 0;
 
     // Get padded MAC of message
-    read_win_lin(sockfd, padded_mac_thm, sizeof(padded_mac_thm));
+    read_win_lin(sockfd, padded_mac_thm, pad_size_mac);
     /*Un-pad recieved MAC*/
     unpad_array(mac_thm, padded_mac_thm, MACSZ); 
         
     // Get size of message from other side
-    read_win_lin(sockfd, compr_size_bytes, sizeof(compr_size_bytes));
+    read_win_lin(sockfd, compr_size_bytes, BYTE_ARRAY_SZ);
     // Convert to uint32_t
     compr_size = from_byte_array( compr_size_bytes, compr_size);
     // Get message from other side
@@ -335,14 +335,14 @@ static void chat(uint8_t* secret,int sockfd)
     crypto_aead_write(&ctx_us, (uint8_t*)buff, mac_us,NULL, 0,(uint8_t*)compr, compr_size);
 
     /*Padding our MAC*/
-    pad_array(mac_us, padded_mac_us, MACSZ, sizeof(padded_mac_us));
+    pad_array(mac_us, padded_mac_us, MACSZ, pad_size_mac);
     /*Send compressed padded MAC of our message*/
-    write_win_lin(sockfd, padded_mac_us, sizeof(padded_mac_us));
+    write_win_lin(sockfd, padded_mac_us, pad_size_mac);
         
     // Convert size to byte array
     to_byte_array(compr_size,compr_size_bytes);
     // Send size of message to other side
-    write_win_lin(sockfd, compr_size_bytes, sizeof(compr_size_bytes));
+    write_win_lin(sockfd, compr_size_bytes, BYTE_ARRAY_SZ);
     // Send encrypted message to server
     write_win_lin(sockfd, (uint8_t*)buff, compr_size);
 

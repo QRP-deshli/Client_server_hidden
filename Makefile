@@ -6,10 +6,10 @@ SRC_DIR = src
 CLIENT_DIR = src/client
 
 # Compiler flags
-CFLAGS_SERVER = -Wall -Wextra -Iinclude -I$(SRC_DIR)# Add -I$(SRC_DIR) to search in the src directory for headers
+CFLAGS_SERVER = -Wall -g -Wextra -Iinclude -I$(SRC_DIR)# Add -I$(SRC_DIR) to search in the src directory for headers
 
 # Compiler flags
-CFLAGS_CLIENT = -Wall -Wextra -Iinclude -I$(SRC_DIR) -I$(CLIENT_DIR) # Add -I$(CLIENT_DIR) to search in the src/client directory for headers
+CFLAGS_CLIENT = -Wall -g -Wextra -Iinclude -I$(SRC_DIR) -I$(CLIENT_DIR) # Add -I$(CLIENT_DIR) to search in the src/client directory for headers
 
 # Source files from src directory
 SOURCES_SERVER = $(SRC_DIR)/monocypher.c $(SRC_DIR)/addition.c \
