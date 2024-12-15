@@ -9,14 +9,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "pin.h"
-#include "../monocypher.h"
-#include "../parameters.h"
-#include "../error.h"
-#include "../txt_reader.h"
+#include "../include/client/pin.h"
+#include "../include/monocypher.h"
+#include "../include/parameters.h"
+#include "../include/error.h"
+#include "../include/txt_reader.h"
 
 /*Path to a txt file of clients key(secured by PIN)*/
-#define KEY_PATH "src/client/key.txt"
+#define KEY_PATH "src/client/client_key.txt"
 /*Path to a txt file of salt*/
 #define SALT_PATH "src/client/salt.txt"
 

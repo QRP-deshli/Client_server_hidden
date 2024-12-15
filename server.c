@@ -118,9 +118,9 @@ Version 0.1 - basic functionality
 #include "crypto.h"
 #include "error.h"
 #include "parameters.h"
-#include "server/secret.h"
 #include "compress_decompress.h"
 #include "macros.h"
+#include "txt_reader.h"
 
 /*
 Backlog for the function listen() -  specifies the maximum number of 
@@ -129,6 +129,9 @@ but not yet accepted by the server using accept()) that the system
 will queue for a socket.
 */
 #define BACKLOG 3
+
+/*Path to a txt file of servers key*/
+#define KEY_PATH "src/server/server_key.txt"
 
 /////////////////////
 /// Socket opener ///
@@ -199,7 +202,7 @@ static int sockct_opn(int *sockfd,int port)
 //////////////////////////////////////////////
 /// Client-server communication "chatting" ///
 //////////////////////////////////////////////
-static void chat(uint8_t* secret,int sockfd)
+static void chat(uint8_t* reading_key, uint8_t* writing_key, int sockfd)
 {
   // Variables for text(plain, compressed, encrypted)
  char buff[MAX]; // Buffer for encrypted text
@@ -251,15 +254,16 @@ static void chat(uint8_t* secret,int sockfd)
  unpad_array(nonce_thm, pad_nonce_their, NONSZ);
 
  //Initialization of an AEAD states:
- crypto_aead_init_x(&ctx_us, secret, nonce_us);
- crypto_aead_init_x(&ctx_thm, secret, nonce_thm);
+ crypto_aead_init_x(&ctx_us, writing_key, nonce_us);
+ crypto_aead_init_x(&ctx_thm, reading_key, nonce_thm);
  /*
   AEAD structure provide dynamic re-keying with memory wipe of 
   previous key, but it would not wipe original key, that was used 
   for initializing of AEAD structure, so we need to wipe it manually 
   after initialization(read Monocypher manual for further exp.)
  */
- crypto_wipe(secret, KEYSZ); // Wiping original SK
+ crypto_wipe(reading_key, KEYSZ); // Wiping original reading SK
+ crypto_wipe(writing_key, KEYSZ); // Wiping original writing SK
 
  // Chat loop:    
  while (1) {
@@ -364,11 +368,15 @@ static void chat(uint8_t* secret,int sockfd)
 static void key_exc_ell(int sockfd) 
 {
  // Variables for key-exchange
- uint8_t your_sk[KEYSZ]; //your secret key
- uint8_t your_pk[KEYSZ]; //your private key
- uint8_t their_pk[KEYSZ]; //their private key
- uint8_t shared_key[KEYSZ]; //shared key material
- uint8_t hidden[KEYSZ]; //your PK hidden with inverse mapping
+ uint8_t your_first_sk[KEYSZ]; //our first secret key
+ uint8_t your_second_sk[KEYSZ]; //our second secret key
+ uint8_t your_first_pk[KEYSZ]; //our first public key
+ uint8_t your_second_pk[KEYSZ]; //our second public key
+ uint8_t their_pk[KEYSZ]; //their public key
+ uint8_t writing_key[KEYSZ]; //our writing key(their reading key)
+ uint8_t reading_key[KEYSZ]; //our reading key(their writing key)
+ uint8_t hidden[KEYSZ]; //our PK hidden with inverse mapping
+ uint8_t key_original[KEYSZ]; //Buffer for long-term shared key(readen from txt)
     
  // Variables for MAC of sides
  /*Keyed MAC of shared key(client), our authentication*/
@@ -376,13 +384,17 @@ static void key_exc_ell(int sockfd)
  /*Keyed MAC of shared key(server), authentication of other side*/
  uint8_t mac_thm[MACSZ]; 
  int pad_size_mac = padme_size(MACSZ);
- uint8_t padded_mac_us[pad_size_mac]; //Our padded MAC
- uint8_t padded_mac_thm[pad_size_mac]; //Their padded MAC
+ uint8_t padded_mac_us[pad_size_mac]; //our padded MAC
+ uint8_t padded_mac_thm[pad_size_mac]; //their padded MAC
 
  /*Computing size of padded hidden PK and creating variable*/
  int pad_size_key = padme_size(KEYSZ);
- uint8_t pad_your_pk[pad_size_key]; //your padded hidden PK
+ uint8_t pad_your_pk[pad_size_key]; //our padded hidden PK
  uint8_t pad_hidden[pad_size_key]; //their padded hidden PK
+
+ /*
+ Generating first shared secret - our reading key, their writing key
+ */
 
  // Receive their hidden and padded PK
  read_win_lin(sockfd, pad_hidden, pad_size_key);
@@ -394,29 +406,32 @@ static void key_exc_ell(int sockfd)
  unpad_array(hidden, pad_hidden, KEYSZ);
  crypto_elligator_map(their_pk, hidden);
 
- // Generate SK and hidden PK
- key_hidden(your_sk, your_pk, KEYSZ);
+ // Generate our first SK and hidden PK
+ key_hidden(your_first_sk, your_first_pk, KEYSZ);
 
  // Padding hidden PK
- pad_array(your_pk, pad_your_pk, KEYSZ, pad_size_key);
+ pad_array(your_first_pk, pad_your_pk, KEYSZ, pad_size_key);
 
  // Send padded and hidden PK to client
  write_win_lin(sockfd, pad_your_pk, pad_size_key);
 
- // Compute shared secret
- kdf(shared_key, your_sk, their_pk, KEYSZ, SERVER);
+ // Compute our reading key(their writing key)
+ kdf(reading_key, your_first_sk, their_pk, KEYSZ, SERVER);
 
- // Compute keyed MAC of our shared key
- crypto_blake2b_keyed(mac_us, MACSZ, key_original, KEYSZ, shared_key, KEYSZ);
+ //Reading long-term shared key from txt
+ read_from_txt(KEY_PATH, key_original, KEYSZ); 
 
- /*Get padded MAC of shared key(authentication of the sides)*/
+ // Compute keyed MAC of our reading key
+ crypto_blake2b_keyed(mac_us, MACSZ, key_original, KEYSZ, reading_key, KEYSZ);
+
+ /*Get padded MAC of their writing key(authentication of the sides)*/
  read_win_lin(sockfd, padded_mac_thm, pad_size_mac);
  /*Un-pad received MAC of other side*/
  unpad_array(mac_thm, padded_mac_thm, MACSZ); 
 
  /*Padding our MAC*/
  pad_array(mac_us, padded_mac_us, MACSZ, pad_size_mac);
- /*Send padded MAC of shared key(authentication of the sides)*/
+ /*Send padded MAC of our reading key(authentication of the sides)*/
  write_win_lin(sockfd, padded_mac_us, pad_size_mac);
 
  // Checking if server is legit(if it owns shared SK)
@@ -424,8 +439,44 @@ static void key_exc_ell(int sockfd)
     exit_with_error(UNEQUAL_MAC,"Other side isn`t legit, aborting");
  }
 
- /*Entering "chatting" stage with derived shared key*/
- chat(shared_key,sockfd); 
+ /*
+ Generating second shared secret - our writing key, their reading key
+ */
+ 
+ // Generate our second SK and hidden PK
+ key_hidden(your_second_sk, your_second_pk, KEYSZ);
+
+ // Padding hidden PK
+ pad_array(your_second_pk, pad_your_pk, KEYSZ, pad_size_key);
+
+ // Send padded and hidden PK to client
+ write_win_lin(sockfd, pad_your_pk, pad_size_key);
+
+ // Compute our writing key(their reading key)
+ kdf(writing_key, your_second_sk, their_pk, KEYSZ, SERVER);
+
+ // Compute keyed MAC of our writing key
+ crypto_blake2b_keyed(mac_us, MACSZ, key_original, KEYSZ, writing_key, KEYSZ);
+
+ crypto_wipe(key_original,KEYSZ); //wiping long-term shared key from memory
+
+ /*Get padded MAC of their reading key(authentication of the sides)*/
+ read_win_lin(sockfd, padded_mac_thm, pad_size_mac);
+ /*Un-pad received MAC of other side*/
+ unpad_array(mac_thm, padded_mac_thm, MACSZ); 
+
+ /*Padding our MAC*/
+ pad_array(mac_us, padded_mac_us, MACSZ, pad_size_mac);
+ /*Send padded MAC of our writing key(authentication of the sides)*/
+ write_win_lin(sockfd, padded_mac_us, pad_size_mac);
+
+ // Checking if server is legit(if it owns shared SK)
+ if(crypto_verify16(mac_us, mac_thm) == -1){
+    exit_with_error(UNEQUAL_MAC,"Other side isn`t legit, aborting");
+ }
+ 
+ /*Entering "chatting" stage with derived shared keys*/
+ chat(reading_key, writing_key, sockfd); 
 }
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////

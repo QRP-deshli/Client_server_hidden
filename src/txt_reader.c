@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "error.h" //All errors defined + function proto
-#include "txt_reader.h"
+#include "include/error.h" //All errors defined + function proto
+#include "include/txt_reader.h"
 
 ////////////////////////
 /// .txt file reader ///

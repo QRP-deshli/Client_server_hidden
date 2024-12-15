@@ -1,4 +1,30 @@
 /******************************************************************************/
+/*                             MODIFICATIONS(NK)                              */
+/*     To compile this code without warnings from GCC I needed to add a few   */
+/*     lines, that do nothing and delete keyword "static" before struct       */
+/*     identity:                                                              */
+/*     (Line 121)                                                             */
+/*     #OLD: static struct compress_identity identity                         */
+/*     #Modified: struct compress_identity identity                           */
+/*     (Line 585)                                                             */
+/*     #OLD: #define PS *p++!=*s++                                            */
+/*            PS || PS || PS || PS || PS || PS || PS || PS || PS ||           */
+/*            PS || PS || PS || PS || PS || PS || PS || PS || PS || s++;      */
+/*     #Modified:                                                             */
+/*            #define PS *p++!=*s++                                           */
+/*            long no_op = PS || PS || PS || PS || PS || PS || PS || PS ||    */
+/*            PS || PS || PS || PS || PS || PS || PS || PS || PS || PS || s++;*/
+/*            if(FALSE)no_op++;                                               */
+/*     (Line 648)                                                             */
+/*     #OLD: end_unrolled_loop: if (--unroll) goto begin_unrolled_loop;       */
+/*     #Modified:                                                             */
+/*            end_unrolled_loop: if (--unroll) goto begin_unrolled_loop;      */
+/*            if(FALSE)goto end_unrolled_loop;                                */
+/*                                                                            */
+/******************************************************************************/
+
+
+/******************************************************************************/
 /*                                                                            */
 /*                                   LZRW3-A.C                                */
 /*                                                                            */
@@ -69,34 +95,9 @@
 /*                                                                            */
 /******************************************************************************/
 
-/******************************************************************************/
-/*                             MODIFICATIONS(NK)                              */
-/*     To compile this code without warnings from GCC I needed to add a few   */
-/*     lines, that do nothing and delete keyword "static" before struct       */
-/*     identity:                                                              */
-/*     (Line 121)                                                             */
-/*     #OLD: static struct compress_identity identity                         */
-/*     #Modified: struct compress_identity identity                           */
-/*     (Line 585)                                                             */
-/*     #OLD: #define PS *p++!=*s++                                            */
-/*            PS || PS || PS || PS || PS || PS || PS || PS || PS ||           */
-/*            PS || PS || PS || PS || PS || PS || PS || PS || PS || s++;      */
-/*     #Modified:                                                             */
-/*            #define PS *p++!=*s++                                           */
-/*            long no_op = PS || PS || PS || PS || PS || PS || PS || PS ||    */
-/*            PS || PS || PS || PS || PS || PS || PS || PS || PS || PS || s++;*/
-/*            if(FALSE)no_op++;                                               */
-/*     (Line 648)                                                             */
-/*     #OLD: end_unrolled_loop: if (--unroll) goto begin_unrolled_loop;       */
-/*     #Modified:                                                             */
-/*            end_unrolled_loop: if (--unroll) goto begin_unrolled_loop;      */
-/*            if(FALSE)goto end_unrolled_loop;                                */
-/*                                                                            */
-/******************************************************************************/
-
                             /* INCLUDE FILES                                  */
                             /* =============                                  */
-#include "lzrw.h"
+#include "include/lzrw.h"
 #include "memory.h"
 #define ULONG uint32_t
 

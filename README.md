@@ -48,8 +48,8 @@ tychto moznosti pre analyzu vieme odstranit pomocou Elligatora 2:
 
 (1) Overenie rovnice krivky: V pripade Curve25519 sa to nevyplati, pretoze
 nepracujeme s hodnotou "y".
-(2) Overenie, ci ma rovnost x^3 + 486662x^2 + x mod
-(255^19) odmocninu: Ak posielame bod na krivke, tato rovnost bude mat odmocninu
+(2) Overenie, ci ma rovnost x^3 + 486662x^2 + x mod(2^255-19) odmocninu: 
+Ak posielame bod na krivke, tato rovnost bude mat odmocninu
 so 100% pravdepodobnostou, ale ked posielame skalar (pseudo-nahodny), tato
 pravdepodobnost klesne na 50%. Preto chceme bod na krivke namapovat na skalar,
 ktory nebude davat odpovedajucemu systemu informacie o tom, ze prebieha vymena

@@ -2,10 +2,13 @@
 CC = gcc
 
 # Compiler flags
-CFLAGS = -Wall -Wextra -Iinclude -I$(SRC_DIR) -I$(SRC_DIR_CLI)# Add -I$(SRC_DIR) to search in the src directory for headers
+CFLAGS = -Wall -Wextra -Iinclude -I$(HEAD_DIR) # Add -I$(HEAD_DIR) to search in the src directory for headers
 
 # Source directory
 SRC_DIR = ../src
+
+# Header dir
+HEAD_DIR = ../src/include
 
 # Source directory of client
 SRC_DIR_CLI = ../src/client

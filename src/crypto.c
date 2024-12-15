@@ -7,11 +7,34 @@
 // Nikita Kuropatkin              //
 
 #include <string.h>
+#include <stdio.h>
 #include <math.h>
-#include "crypto.h" //Crypto primitievs
-#include "monocypher.h"
-#include "random.h" //CSPRNG
-#include "macros.h"
+#include "include/crypto.h" //Crypto primitievs
+#include "include/monocypher.h"
+#include "include/random.h" //CSPRNG
+#include "include/macros.h"
+
+/*
+Macros for PADME:
+L16, L24, L32 - Sizes of messages (compared to input size).
+S16, S24, S32 - Computation of the S element for the PADME 
+algorithm for different sizes.
+E16, E24, E32 - Computation of the E element for the PADME 
+algorithm for different sizes.
+These macros ensure that the log2 calculations are executed at compile time, 
+making the code more lightweight for embedded platforms.
+*/
+#define L16 16
+#define E16 (int)log2(L16)
+#define S16 (int)log2(E16) + 1
+
+#define L24 24
+#define E24 (int)log2(L24)
+#define S24 (int)log2(E24) + 1
+
+#define L32 32
+#define E32 (int)log2(L32)
+#define S32 (int)log2(E32) + 1
 
 /////////////////
 ///   PADME   ///
@@ -24,8 +47,20 @@ with bitmask(PADME: https://lbarman.ch/blog/padme/)
 int padme_size(const int L) 
 {
  //modified PADME for padding of the key + nonce
- int E = (int)log2(L);
- int S = (int)log2(E) + 1;
+ int E;
+ int S;
+ if (L == L16) {
+   E = E16;
+   S = S16;
+ }
+ else if (L == L24) {
+   E = E24;
+   S = S24;
+ }
+ else if (L == L32) {
+   E = E32;
+   S = S32;
+ }
  int lastBits = E - S;
  int bitMask = (1 << lastBits) - 1;
  return (L + bitMask);

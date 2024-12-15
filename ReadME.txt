@@ -6,10 +6,12 @@ Program pre sifrovanu komunikaciu klient-server so steganografickou podporou
 
 Zakladny ciel programu:
 ---------------------------
-Cielom tohto programu je pomocou zakladnych stavebnych prvkov, ktore ponuka
-Monocypher, vytvorit system na sifrovanu komunikaciu medzi dvoma stranami.
-Program ma zaistit, aby komunikacia bola tazko analyzovatelna a zaroven skryt
-samotnu existenciu komunikacie pomocou eliminacie tzv. "metadat".
+Cielom tohto riesenia je pomocou zakladnych stavebnych prvkov, ktore ponuka 
+Monocypher, vytvorit system na sifrovanu komunikaciu medzi dvoma stranami.  
+System ma zaistit, aby komunikacia bola tazko analyzovatelna a zaroven skryt
+samotnu existenciu komunikacie pomocou eliminacie tzv. metadat, medzi ktore 
+patria rozmery klucov, nonce a MAC. Okrem toho zabezpecuje integritu dat a 
+overenie zdrojov, taktiez je zabezpecena dopredna bezpecnost (forward secrecy).  
 
 Pouzite bloky:
 ------------------
@@ -48,8 +50,8 @@ tychto moznosti pre analyzu vieme odstranit pomocou Elligatora 2:
 
 (1) Overenie rovnice krivky: V pripade Curve25519 sa to nevyplati, pretoze
 nepracujeme s hodnotou "y".
-(2) Overenie, ci ma rovnost x^3 + 486662x^2 + x mod
-(255^19) odmocninu: Ak posielame bod na krivke, tato rovnost bude mat odmocninu
+(2) Overenie, ci ma rovnost x^3 + 486662x^2 + x mod(2^255-19) odmocninu: 
+Ak posielame bod na krivke, tato rovnost bude mat odmocninu
 so 100% pravdepodobnostou, ale ked posielame skalar (pseudo-nahodny), tato
 pravdepodobnost klesne na 50%. Preto chceme bod na krivke namapovat na skalar,
 ktory nebude davat odpovedajucemu systemu informacie o tom, ze prebieha vymena
@@ -75,45 +77,61 @@ zabezpecenu pomocou PIN-kodu.
 (1)Na zaciatku sa vytvori socket pre komunikaciu vo funkcii main().
 
 (2)Potom sa zavola funkcia key_exc_ell, ktora zabezpeci vymenu klucov a
-generovanie rovnakeho "shared secret" na oboch stranach v tychto krokoch:
+generovanie vysielajuceho(writing) a primajuceho(reading) klucov
+na oboch stranach v tychto krokoch:
       
-      1)Klient si zvoli svoj sukromny kluc (SK), na zaklade ktoreho sa
-      vygeneruje verejny kluc (PK). PK sa nasledne pomocou Elligatora namapuje
-      na skalar. Po uprave velkosti spravy sa tento skryty PK posle serveru.
+    1. Klient si zvoli svoj sukromny kluc (SK), na zaklade ktoreho sa vygeneruje
+    verejny kluc (PK). PK sa nasledne pomocou Elligatora namapuje na skalar. 
+    Po uprave velkosti spravy sa tento skryty PK posle serveru.
 
-      2)Server dostane "skryty" PK od klienta, upravi jeho velkost a potom
-      pomocou Elligatora namapuje skalar na prislusny bod na krivke
-      (PK klienta).
-      
-      3)Server potom pomocou funckie key_hidden() vytvori svoj SK a PK, a 
-      Elligator namapuje serverovy PK na
-      prislusny skalar. Nasledne sa tento skalar, upraveny pomocou PADME, posle
-      klientovi.
+    2. Server dostane "skryty" PK od klienta, upravi jeho velkost a potom 
+    pomocou Elligatora namapuje skalar na prislusny bod na krivke, 
+    cim ziska PK klienta.
 
-      4)Klient vykona rovnake kroky ako server v predchadzajucom bode, aby
-      ziskal PK servera.
+    3. Server pomocou funkcie key_hidden() vygeneruje svoj prvy SK a PK, 
+    ktory Elligator namapuje na prislusny skalar. Tento skalar, upraveny pomocou 
+    PADME, sa nasledne posle klientovi.
 
-      *Dalsie dva kroky sa vykonaju vo funkcii kdf():*
-      5)Pomocou funkcie x25519 obe strany vygeneruju "shared secret", co je
-      surovy zdielany kluc.
-  
-      6)Pomocou funkcie Blake2b sa vygeneruje sifrovaci kluc pre 
-      AEAD(ChaCha20 + Poly1305)
-      (pri generovani sa pouziju verejne kluce oboch stran a "shared secret").
-      *
-      (7) Na klientskej strane si program vyziada PIN, ktory pomocou funkcie 
-      Argon2i zahasuje a zoxoruje so zabezpecenym zdielanym klucom. 
-      Tym ziska dlhodoby zdielany kluc (SK) v cistej podobe, 
-      teda bez zabezpecenia pomocou PIN-kodu. 
-      (Predvolena hodnota PIN-u = "777777")
-     
-      8)Pomocou Blake2b a zdielaneho SK sa vygeneruje MAC, ktory strany 
-      preposlu jedna druhej. Tymto overia, ze druha strana je legitimna 
-      (kazda strana porovna MAC druhej strany s tym, co vygenerovala samostatne.
-      Ak su rovnake, znamena to, ze druha strana vlastni zdielany SK). 
-      Ked strany su legitimne kluc vygenerovani pomocou kdf() sa potom pouzije
-      na sifrovanie komunikacie.
+    4. Klient vykona rovnake kroky ako server v bode 2, aby ziskal PK servera.
 
+    5. Obe strany zavolaju funkciu kdf() na generovanie prveho zdielaneho kluca.
+
+        **Funkcia kdf() obsahuje dva nasledujuce kroky:
+         - Obe strany pomocou funkcie `x25519` vygeneruju "shared secret," 
+           co je surovy zdielany kluc.
+         - Funkcia Blake2b sa pouzije na generovanie prveho zdielaneho kluca 
+           pre AEAD (ChaCha20 + Poly1305). Pre server to bude prijimaci kluc 
+           (reading key, na desifrovanie textu) a pre klienta vysielaci kluc 
+           (writing key, na sifrovanie textu). 
+           Pri generovani sa pouziju verejne kluce oboch stran a "shared secret".
+
+    6. Na klientskej strane si system vyziada PIN, ktory sa pomocou funkcie 
+    Argon2 zahasuje a zoxoruje so zdielanym klucom. Tym sa ziska dlhodoby 
+    zdielany kluc (DSK) v cistej podobe, nezabezpeceny PIN-om. 
+    (Predvolena hodnota PIN-u je "777777".)
+
+    7. Blake2b sa pouzije na generovanie MAC, ktory si strany navzajom preposlu. 
+    Tato vymena sluzi na overenie legitimity druhej strany. Ak su MAC rovnake, 
+    znamena to, ze druha strana vlastni zdielany SK. Po overeni sa kluce 
+    vygenerovane funkciou kdf() pouziju na dalsiu komunikaciu.
+
+    8. Server pomocou funkcie key_hidden() vytvori svoj druhy par klucov 
+    (SK a PK), ktory Elligator namapuje na skalar. Tento skalar, upraveny 
+    pomocou PADME, sa posle klientovi.
+
+    9. Obe strany zavolaju funkciu kdf() na generovanie druheho zdielaneho kluca.
+
+       **Druha iteracia funkcie `kdf()` obsahuje nasledujuce kroky:
+        - Obe strany pomocou funkcie `x25519` opat vygeneruju "shared secret".
+        - Blake2b sa pouzije na generovanie druheho zdielaneho kluca pre 
+        AEAD (ChaCha20 + Poly1305). 
+        Pre server to bude vysielaci kluc (writing key, na sifrovanie textu) a 
+        pre klienta prijimaci kluc (reading key, na desifrovanie textu). 
+        Pri generovani sa pouzije druhy PK servera, PK klienta a "shared secret".
+
+    10. Blake2b sa opat pouzije na generovanie MAC, ktory si strany preposlu na 
+    overenie legitimity, rovnako ako v bode 7. Po uspechu sa druhe kluce 
+    vygenerovane funkciou kdf() pouziju na dalsiu komunikaciu.
 
 (3)Po uspesnej vymene klucov sa zavola funkcia chat, kde bude prebiehat samotna
 komunikacia:
@@ -121,8 +139,10 @@ komunikacia:
       1)Na zaciatku obe strany vygeneruju nonce a potom ho vyplnia pomocou
       PAMDE a poslu druhej strane.
       
-      2)Kazda zo stran nainicializuje dva bloky AEAD: jeden pre autentifikovane
-      sifrovanie a druhy pre autentifikovane desifrovanie sprav od druhej strany.
+      2)Kazda zo stran nainicializuje dva bloky AEAD: jeden pre autentifikovane 
+      sifrovanie a druhy pre autentifikovane desifrovanie sprav od druhej strany. 
+      Pricom pre inicializaciu kazdeho z blokov sa pouzije prislusny 
+      zdielany kluc (vysielaci (writing key) alebo prijimaci (reading key)).
 
       3)Klient ziska spravu z konzoloveho vstupu, spravu komprimuje pomocou
       LZRW3-A a potom zasifruje a autentifikuje pomocou AEAD

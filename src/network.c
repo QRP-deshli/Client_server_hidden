@@ -7,8 +7,8 @@
 // Nikita Kuropatkin              //
 
 #include <stdio.h>
-#include "network.h"
-#include "error.h" //All errors defined + function proto
+#include "include/network.h"
+#include "include/error.h" //All errors defined + function proto
 
 //////////////////////////////////////////
 /// Data receiver ///

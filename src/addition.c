@@ -9,9 +9,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "addition.h"
-#include "error.h"
-#include "macros.h"
+#include "include/addition.h"
+#include "include/error.h"
+#include "include/macros.h"
 
 /*Stop-word, if someone use it in conversation, it will end*/
 #define EXIT "exit"

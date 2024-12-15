@@ -14,13 +14,6 @@ are in random.c.
 #ifndef RANDOM_H
 #define RANDOM_H
 #include <stdint.h>
-/*Windows Libs*/
-#ifdef _WIN32
-    #include <stdlib.h>
-/*Linux Libs*/
-#else 
-    #include <bsd/stdlib.h>
-#endif
 
 //////////////////////////////////////////
 /// Random numbers generator ///

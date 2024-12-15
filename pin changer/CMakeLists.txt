@@ -8,7 +8,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED True)
 
 # Include directories (point to the parent directory where Monocypher is located)
-include_directories(../src)  # Adjust path to Monocypher and other headers
+include_directories(../src/include)  # Adjust path to Monocypher and other headers
 
 # Add the Monocypher and other sources files
 set(LIBS_SRC

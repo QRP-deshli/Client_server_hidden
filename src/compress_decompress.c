@@ -8,8 +8,8 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include "lzrw.h"
-#include "error.h"
+#include "include/lzrw.h"
+#include "include/error.h"
 
 /*Macro function to allocate memory for LZRW3a work_area*/
 #define ALLOCATE_WORK_AREA(size) malloc(size) 
@@ -115,6 +115,10 @@ void decompress_text(unsigned char *input_txt,unsigned char *output_txt, const u
  uint32_t output_size = 0; 
  /*Working memory for LZRW3a decompression*/
  void *wrk_mem = ALLOCATE_WORK_AREA(lzrw3a_req_mem()); 
+
+ if (wrk_mem == NULL) {
+    exit_with_error(ALLOCATION_ERROR,"Memory allocation failed");
+ }
 
  /*LZRW3a decompress*/
  lzrw3a_compress(COMPRESS_ACTION_DECOMPRESS,wrk_mem,input_txt,input_size,output_txt,&output_size); 

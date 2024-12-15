@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "error.h"
+#include "include/error.h"
 
 //DEBUG macro options:
 #define YES 1

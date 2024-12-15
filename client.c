@@ -172,7 +172,7 @@ static int sockct_opn(int port, char *ip)
 ///////////////////////////////////////////////////
 /// Client-server communication "chatting" ///
 ///////////////////////////////////////////////////
-static void chat(uint8_t* secret,int sockfd)
+static void chat(uint8_t* writing_key, uint8_t* reading_key, int sockfd)
 {
  // Variables for text(plain, compressed, encrypted)
  char buff[MAX]; // Buffer for encrypted text
@@ -224,15 +224,16 @@ static void chat(uint8_t* secret,int sockfd)
  unpad_array(nonce_thm, pad_nonce_their, NONSZ);
 
  // Initialization of an AEAD states:
- crypto_aead_init_x(&ctx_us, secret, nonce_us);
- crypto_aead_init_x(&ctx_thm, secret, nonce_thm);
+ crypto_aead_init_x(&ctx_us, writing_key, nonce_us);
+ crypto_aead_init_x(&ctx_thm, reading_key, nonce_thm);
  /*
   AEAD structure provide dynamic re-keying with memory wipe of 
   previous key, but it would not wipe original key, that was used 
   for initializing of AEAD structure, so we need to wipe it manually 
   after initialization(read Monocypher manual for further exp.)
  */
- crypto_wipe(secret, KEYSZ); // Wiping original SK
+ crypto_wipe(reading_key, KEYSZ); // Wiping original reading SK
+ crypto_wipe(writing_key, KEYSZ); // Wiping original writing SK
 
  // Chat loop:
  while (1) {
@@ -334,11 +335,13 @@ static void chat(uint8_t* secret,int sockfd)
 static void key_exc_ell(int sockfd) 
 {
  // Variables for key-exchange
- uint8_t your_sk[KEYSZ]; //your secret key
- uint8_t your_pk[KEYSZ]; //your private key
- uint8_t their_pk[KEYSZ]; //their private key
- uint8_t shared_key[KEYSZ]; //shared key material
- uint8_t hidden[KEYSZ]; //your PK hidden with inverse mapping
+ uint8_t your_sk[KEYSZ]; //our secret key
+ uint8_t your_pk[KEYSZ]; //our public key
+ uint8_t their_first_pk[KEYSZ]; //their first public key
+ uint8_t their_second_pk[KEYSZ]; //their second public key
+ uint8_t writing_key[KEYSZ]; //our writing key(their reading key)
+ uint8_t reading_key[KEYSZ]; //our reading key(their writing key)
+ uint8_t hidden[KEYSZ]; //our PK hidden with inverse mapping
  uint8_t plain_key[KEYSZ]; //key for authentication of your side
     
  // Variables for MAC of sides
@@ -347,13 +350,17 @@ static void key_exc_ell(int sockfd)
  /*Keyed MAC of shared key(server), authentication of other side*/
  uint8_t mac_thm[MACSZ]; 
  int pad_size_mac = padme_size(MACSZ);
- uint8_t padded_mac_us[pad_size_mac]; //Our padded MAC
- uint8_t padded_mac_thm[pad_size_mac]; //Their padded MAC
+ uint8_t padded_mac_us[pad_size_mac]; //our padded MAC
+ uint8_t padded_mac_thm[pad_size_mac]; //their padded MAC
 
  /*Computing size of padded hidden PK and creating variable*/
  int pad_size_key = padme_size(KEYSZ);
- uint8_t pad_your_pk[pad_size_key]; //your padded hidden PK
+ uint8_t pad_your_pk[pad_size_key]; //our padded hidden PK
  uint8_t pad_hidden[pad_size_key]; //their padded hidden PK
+
+ /*
+ Generating first shared secret - our writing key, their reading key
+ */
 
  /*Generate SK and hidden PK*/
  key_hidden(your_sk, your_pk, KEYSZ);
@@ -372,25 +379,23 @@ static void key_exc_ell(int sockfd)
  to actual curve point(getting normal PK)
  */
  unpad_array(hidden, pad_hidden, KEYSZ);
- crypto_elligator_map(their_pk, hidden);
+ crypto_elligator_map(their_first_pk, hidden);
 
- // Compute the shared secret
- kdf(shared_key, your_sk, their_pk, KEYSZ, CLIENT);
+ // Compute our writing key(their reading key)
+ kdf(writing_key, your_sk, their_first_pk, KEYSZ, CLIENT);
 
  // Asking and checking PIN for SK from user
  pin_cheker(plain_key);
 
- // Compute keyed MAC of our shared key
- crypto_blake2b_keyed(mac_us, MACSZ, plain_key, KEYSZ, shared_key, KEYSZ);
-
- crypto_wipe(plain_key,KEYSZ); //wiping plain_key from memory
+ // Compute keyed MAC of our writing key
+ crypto_blake2b_keyed(mac_us, MACSZ, plain_key, KEYSZ, writing_key, KEYSZ);
     
  /*Padding our MAC*/
  pad_array(mac_us, padded_mac_us, MACSZ, pad_size_mac);
- /*Send padded MAC of shared key(authentication of the sides)*/
+ /*Send padded MAC of our writing key(authentication of the sides)*/
  write_win_lin(sockfd, padded_mac_us, pad_size_mac);
 
- // Get padded MAC of shared key(authentication of the sides)
+ // Get padded MAC of their reading key(authentication of the sides)
  read_win_lin(sockfd, padded_mac_thm, pad_size_mac);
  /*Un-pad received MAC of other side*/
  unpad_array(mac_thm, padded_mac_thm, MACSZ); 
@@ -399,9 +404,46 @@ static void key_exc_ell(int sockfd)
  if(crypto_verify16(mac_us, mac_thm) == -1){
      exit_with_error(UNEQUAL_MAC,"Other side isn`t legit, aborting");
  }
+ 
+ /*
+ Generating second shared secret - our reading key, their writing key
+ */
 
- /*Enterening "chatting" stage with derived shared key*/
- chat(shared_key,sockfd);
+ // Receiving PK(hidden and padded) (key exchange)
+ read_win_lin(sockfd, pad_hidden, pad_size_key);
+
+ /* 
+ Return to the actual key-size and mapping scalar 
+ to actual curve point(getting normal PK)
+ */
+ unpad_array(hidden, pad_hidden, KEYSZ);
+ crypto_elligator_map(their_second_pk, hidden);
+
+ // Compute our reading key(their writing key)
+ kdf(reading_key, your_sk, their_second_pk, KEYSZ, CLIENT);
+
+ // Compute keyed MAC of our reading key
+ crypto_blake2b_keyed(mac_us, MACSZ, plain_key, KEYSZ, reading_key, KEYSZ);
+
+ crypto_wipe(plain_key,KEYSZ); //wiping plain_key from memory
+    
+ /*Padding our MAC*/
+ pad_array(mac_us, padded_mac_us, MACSZ, pad_size_mac);
+ /*Send padded MAC of reading key(authentication of the sides)*/
+ write_win_lin(sockfd, padded_mac_us, pad_size_mac);
+
+ // Get padded MAC of their writing key(authentication of the sides)
+ read_win_lin(sockfd, padded_mac_thm, pad_size_mac);
+ /*Un-pad received MAC of other side*/
+ unpad_array(mac_thm, padded_mac_thm, MACSZ); 
+
+ // Checking if server is legit(if it owns shared SK)
+ if(crypto_verify16(mac_us, mac_thm) == -1){
+     exit_with_error(UNEQUAL_MAC,"Other side isn`t legit, aborting");
+ }
+ 
+ /*Enterening "chatting" stage with derived shared keys*/
+ chat(writing_key, reading_key, sockfd);
 }
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////

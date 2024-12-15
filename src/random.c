@@ -6,11 +6,17 @@
 // 05.12.2024                     //
 // Nikita Kuropatkin              //
 
-#ifdef _WIN32 //Macro for rand_s(Windows OS)
-    #define _CRT_RAND_S //rand_s
+#include "include/error.h" //All errors defined + function proto
+#include "include/random.h"
+/*Windows Libs*/
+#ifdef _WIN32
+    /*Macro for rand_s(Windows OS)*/
+    #define _CRT_RAND_S 
+    #include <stdlib.h>
+/*Linux Libs*/
+#else 
+    #include <bsd/stdlib.h>
 #endif
-#include "error.h" //All errors defined + function proto
-#include "random.h"
 
 //////////////////////////////////////////
 /// Random numbers generator ///
