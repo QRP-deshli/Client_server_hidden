@@ -51,6 +51,7 @@ AEAD - authenticated encryption with additional data
 //////////Version history//////////
 /*
 Version 0.7.0:
+# Added DEMO version for static memory allocation in compress_decompress.c.
 # The long-term shared key is now read from a `.txt` file on the server 
   side as well.
 # Refactored help comments: added explanations for every input value and 

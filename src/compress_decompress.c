@@ -15,7 +15,7 @@
 /* Macros for deciding the type of allocation */
 #define STATIC 0
 #define DYNAMIC 1
-#define ALLOCATION STATIC  // Set ALLOCATION to STATIC or DYNAMIC
+#define ALLOCATION DYNAMIC  // Set ALLOCATION to STATIC or DYNAMIC
 
 /* Macro function to allocate memory for LZRW3a work_area */
 #define ALLOCATE_WORK_AREA(size) malloc(size) 
