@@ -1,3 +1,14 @@
+/******************************************************************************/ 
+/*                             MODIFICATIONS (NK)                             */
+/*                                                                            */
+/*     For static memory allocation, I need a constant variable that holds    */
+/*     the desired memory size. I cannot use the function uint32_t            */
+/*     lzrw3a_req_mem(), as it is not a constant expression. Therefore, I     */
+/*     migrated some of the macros used to calculate the memory size from     */
+/*     lzrw3-a.c. Look for the #NK comment in the code for further details.   */
+/*                                                                            */
+/******************************************************************************/ 
+
 /******************************************************************************/
 /*                                                                            */
 /*                                 COMPRESS.H                                 */
@@ -158,6 +169,14 @@
 #define COMPRESS_MAX_ORG (COMPRESS_MAX_COM-COMPRESS_OVERRUN)
 
 #define COMPRESS_MAX_STRLEN 255
+
+//#NK migrated from lzrw3-a.c for static allocation
+#define ULONG uint32_t
+#define U(X)            ((ULONG) X)
+#define SIZE_P_BYTE     (U(sizeof(UBYTE *)))
+#define ALIGNMENT_FUDGE (U(16))
+#define MEM_REQ ( U(4096)*(SIZE_P_BYTE) + ALIGNMENT_FUDGE )
+//   
 
 /* The following structure provides information about the algorithm.         */
 /* > The top bit of id must be zero. The remaining bits must be chosen by    */

@@ -54,7 +54,7 @@ Set MODE to CHANGE_PIN if you want to change pin for key
 #define MODE CHANGE_PIN
 
 /*Path to a txt file of clients key*/
-#define KEY_PATH "../src/client/key.txt"
+#define KEY_PATH "../src/client/client_key.txt"
 /*Path to a txt file of salt*/
 #define SALT_PATH "../src/client/salt.txt"
 /*Path to a txt file of new PIN*/
@@ -66,14 +66,20 @@ Set MODE to CHANGE_PIN if you want to change pin for key
 /// Secured key printer    ///
 //////////////////////////////
 /*
-This function takes input a variable that points to key and prints it 
-to stdout in text form. You need to copy(manually replace) new key to 
-src/client/key.txt
+This function takes a pointer to a key and prints its contents to `stdout` 
+in a text format. 
+The printed key must be manually copied and saved to 
+`src/client/client_key.txt`.
+Parameters:
+- `finish_key`: A pointer to the key that will be printed. 
+This function serves to display the secured key, making it easier for the 
+user to transfer or store the key in a secure file.
 */
-static void print_key(const uint8_t *finish_key){
+static void print_key(const uint8_t *finish_key)
+{
  printf("!New key-material!\n");
  printf("(Actual authentication key can be accessed by xoring PIN to this value)\n");
- printf("Manually replace value in src/client/key.txt by this value:\n");
+ printf("Manually replace value in src/client/client_key.txt by this value:\n");
 
  /*
   Loop for printing secured key in beautified form,
@@ -98,13 +104,21 @@ static void print_key(const uint8_t *finish_key){
 /// Function that secures key with PIN   ///
 ////////////////////////////////////////////
 /*
-This function uses value of new_pin to secure key,
-that is contained in src/client/secret.h.
-Remember to change value contained in new_pin.txt to your new PIN, 
-also rember to copy servers key_original value to value stored
-in src/client/key.txt.
-This way you will be securing plain key(right way).
-Simply: it applies PIN for your key.
+This function secures the key stored in `src/client/client_key.txt` using a 
+PIN provided in `new_pin.txt`.
+The function applies the PIN to the shared key. 
+The original key is modified by XORing it with the hashed PIN to produce 
+a secured key.
+Before using this function:
+- Change the value in `new_pin.txt` to your new PIN.
+- Copy the server's key value to the file `src/client/client_key.txt`.
+This process ensures that the plain key is secured using the PIN in a 
+correct and secure way.
+Parameters:
+- `shared_key`: The original shared key that will be secured.
+- `salt`: A salt value used in the key derivation process.
+- `new_pin`: The new PIN that will be used to secure the shared key by 
+   XORing it with the PIN's hash.
 */
 static void pin_to_plain(const uint8_t *shared_key, uint8_t *salt, uint8_t *new_pin)
 {
@@ -124,14 +138,26 @@ static void pin_to_plain(const uint8_t *shared_key, uint8_t *salt, uint8_t *new_
 /// Function that changes PIN for the key  ///
 //////////////////////////////////////////////
 /*
-This function uses value of old_pin to un-secure key,
-that is contained in src/client/key.txt, 
-than secures that key with new PIN(new_pin.txt)
-Remember to change value contained in new_pin.txt to your new PIN, 
-and old_pin.txt to your old PIN.
-Simply: it changes PIN for your key.
+This function changes the PIN for securing the key stored in 
+`src/client/client_key.txt`.
+The function first un-secures the key using the provided `old_pin.txt` 
+by XORing the key with the hash of the old PIN. Then, it secures the key 
+again using the new PIN (`new_pin.txt`).
+Before using this function:
+- Change the value in `old_pin.txt` to your current PIN.
+- Change the value in `new_pin.txt` to the new PIN that will secure the key.
+This process effectively replaces the old PIN with a 
+new one for securing the key.
+Parameters:
+- `shared_key`: The key to be secured with a new PIN.
+- `salt`: A salt value used in the key derivation process.
+- `new_pin`: The new PIN that will be applied to secure the key.
+- `old_pin`: The old PIN used to un-secure the key before applying the 
+  new PIN.
 */
-static void apply_new_pin(const uint8_t *shared_key, uint8_t *salt, uint8_t *new_pin, uint8_t *old_pin){
+static void apply_new_pin(const uint8_t *shared_key, uint8_t *salt, uint8_t *new_pin, uint8_t *old_pin)
+ 
+{
  uint8_t plain_key[HASHSZ]; //Plain key, key that is not secured by pin
  uint8_t new_pinned_key[HASHSZ]; //New key secured by NEW pin
  uint8_t hashed_old_pin[HASHSZ]; //Hash of old pin
@@ -154,8 +180,11 @@ static void apply_new_pin(const uint8_t *shared_key, uint8_t *salt, uint8_t *new
 /// Caster from uint8_t to char ///
 ///////////////////////////////////
 /*
-This function casts uint8_t array values 
-to their representation in char(ASCII)
+This function casts the values of a `uint8_t` array to their 
+corresponding ASCII character representations.
+Parameters:
+- `pin`: A pointer to the `uint8_t` array that will be cast to characters.
+We need this function, cause values of pins are stored in uint8_t format
 */
 void cast(uint8_t *pin){
  for(int i = 0; i < PINSZ;i++) pin[i]+='0';
@@ -167,7 +196,7 @@ void cast(uint8_t *pin){
 int main()
 {
  /*
- Key that contained in src/client/key.txt
+ Key that contained in src/client/client_key.txt
  (can be plain or secured by PIN)
  */
  uint8_t shared_key[HASHSZ]; 

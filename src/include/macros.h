@@ -1,9 +1,9 @@
 // Client-server api              //
 // Additional functions           //
-// Version 0.6.5                  //
+// Version 0.7.0                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 05.12.2024                     //
+// 16.12.2024                     //
 // Nikita Kuropatkin              //
 
 /* 

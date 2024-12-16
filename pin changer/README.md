@@ -3,16 +3,16 @@
 Doplnkovy program pre projekt *client_server_hidden* sluzi na 
 zabezpecenie zdielaneho tajomstva PIN-kodom na klientskej strane.
 
-2024-05-12, v.0.2, Nikita Kuropatkin KEMT FEI TUKE
+2024-16-12, v.0.3, Nikita Kuropatkin KEMT FEI TUKE
 
 Program ponuka dve moznosti spravy zdielaneho kluca:
 
 1. **Zabezpecenie cisteho kluca**  
-   Program pouzije kluc ulozeny v `key.txt` v adresari `src/client`  
+   Program pouzije kluc ulozeny v `client_key.txt` v adresari `src/client`  
    a zasifruje ho PIN-kodom.
 
 2. **Zmena PIN-kodu existujuceho kluca**  
-   Program zoberie kluc ulozeny v `key.txt`, pouzije stary PIN na jeho  
+   Program zoberie kluc ulozeny v `client_key.txt`, pouzije stary PIN na jeho  
    dehashovanie a nasledne ho zahashuje novym PIN-kodom.  
    Pouzivatel musi zadat stary aj novy PIN.
 
@@ -33,11 +33,10 @@ Program vypise novu hodnotu zdielaneho kluca, zabezpeceneho pinom,
 ktoru aktualizujte v subore `src/client/key.txt`.
 
 Ak chcete pouzit inu hodnotu soli pre hashovanie (subor `src/client/salt.txt`),  
-najprv ulozte hodnotu cisteho kluca do `src/client/key.txt`  
+najprv ulozte hodnotu cisteho kluca do `src/client/client_key.txt`  
 a zabezpecte ho pomocou pinu.  
-Pri zmene soli pred spravnou konfiguraciou zabezpeceneho kluca  
-API prestane fungovat.
-
+Pri zmene soli pred spravnou konfiguraciou zabezpeceneho kluca 
+(ulozenim noveho kluca do src/client/client_key.txt) API prestane fungovat.
 
 ## Pouzitie
 
@@ -45,7 +44,7 @@ Program je kompatibilny s Windows a Linux.
 
 ### Windows
 
-- GCC 13.2.0  
+- GCC 14.2.0  
 - MinGW-64 12.0.0  
 - Minimalna verzia CMake: 3.10  
 

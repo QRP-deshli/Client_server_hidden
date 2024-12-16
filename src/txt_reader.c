@@ -1,9 +1,9 @@
 // Client-server api              //
 // File reader                    //
-// Version 0.6.5                  //
+// Version 0.7.0                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 05.12.2024                     //
+// 16.12.2024                     //
 // Nikita Kuropatkin              //
 
 #include <stdio.h>
@@ -13,18 +13,20 @@
 #include "include/txt_reader.h"
 
 ////////////////////////
-/// .txt file reader ///
+/// .txt File Reader ///
 ////////////////////////
 /*
-This function purpose is read data(uint8_t arrays) from .txt files.
-Input variable "path" is a path to a file from working directory
-(directory where .exe file is contained).
-Variable "buffer" is an array where the read data will be written
-(key, salt, pin arrays).
-Var "size" is an size of array that we gonna read from file
-(amount of chars)
+The purpose of this function is to read data (`uint8_t` arrays) from 
+.txt files.  
+It takes the following parameters:  
+- `path` - the path to the .txt file relative to the working directory  
+  (the directory where the .exe file is located).  
+- `buffer` - an array where the read data (e.g., key, salt, pin arrays) 
+  will be stored.  
+- `size` - the size of the array to read from the file 
+  (number of characters).  
 */
-void read_from_txt(const char *path, uint8_t *buffer, const int size){
+void read_from_txt(const char *path, uint8_t *buffer, const int size) {
  const char *filename = path; //Path to the text file
  FILE *file = fopen(filename, "r"); //Open file for reading only 
 
@@ -38,8 +40,8 @@ void read_from_txt(const char *path, uint8_t *buffer, const int size){
     /*Scaning elements of array and checking format(should be 0-255)*/
     if (fscanf(file, "%hhx", &buffer[i]) != 1) {
         printf("\nIn %s:\n", path);
-        exit_with_error(WRONG_TXT_FORMAT,"File is wrongly formated");
         fclose(file);
+        exit_with_error(WRONG_TXT_FORMAT,"File is wrongly formated");
     }
  }
 

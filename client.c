@@ -1,9 +1,9 @@
 // Client-server api              //
 // Client side                    //
-// Version 0.6.5                  //
+// Version 0.7.0                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 05.12.2024                     //
+// 16.12.2024                     //
 // Nikita Kuropatkin              //
 
 /*
@@ -50,6 +50,21 @@ AEAD - authenticated encryption with additional data
 
 //////////Version history//////////
 /*
+Version 0.7.0:
+# Added DEMO version for static memory allocation in compress_decompress.c.
+# The long-term shared key is now read from a `.txt` file on the server 
+  side as well.
+# Refactored help comments: added explanations for every input value and 
+  functionality.
+# Migration from using one shared encryption key on both sides to two keys 
+  (`writing_key` and `reading_key`) like in a DH Ratchet structure 
+  (with only 2 iterations).
+# Corrected some mistakes in the ReadMe and comments.
+# Added a memory allocation check in the `decompress` function in 
+  `compress_decompress.c`.
+# Changed the structure of `padme_size` to be more lightweight, because 
+  the `log2` function is now called during preprocessing.
+# Migrated header files (`.h`) to `src/include`.
 Version 0.6.5 :
 # Added txt file-reader for reading key and salt on clients side
 # Added more macros and created new file for them macros.h
@@ -253,9 +268,9 @@ static void chat(uint8_t* writing_key, uint8_t* reading_key, int sockfd)
     // Buffer overflow, clear stdin
     if (plain[strlen(plain) - 1] != '\n') {
         printf("Your message was too long, boundaries is: %d symbols,"
-        "only those will be sent.\n",TEXT_MAX);
-            clear();
-            plain[strlen(plain) - 1] = '\n';
+               "only those will be sent.\n",TEXT_MAX);
+        clear();
+        plain[strlen(plain) - 1] = '\n';
     }
 
     // Compressing inputed text
@@ -276,7 +291,7 @@ static void chat(uint8_t* writing_key, uint8_t* reading_key, int sockfd)
     // Send encrypted message to server
     write_win_lin(sockfd, (uint8_t*)buff, compr_size);
 
-    if(exiting("Client", plain) == 1)break; //Checks for stop-word
+    if (exiting("Client", plain) == 1) break; //Checks for stop-word
 		
     // Clear buffers 
     memset(buff, 0, MAX);
@@ -305,19 +320,18 @@ static void chat(uint8_t* writing_key, uint8_t* reading_key, int sockfd)
     }
 
     // Decompress unencrypted text
-    decompress_text((uint8_t*)compr, (uint8_t*)plain, compr_size);
+    decompress_text((uint8_t*)compr, MAX, (uint8_t*)plain, compr_size);
 
     /* 
      Inserting terminator at the actual end 
      of string to avoid showing another garbage
     */
-    for(int j = 0; j < TEXT_MAX; j++) 
-    {
+    for (int j = 0; j < TEXT_MAX; j++) {
         if(plain[j] == '\n' && j != TEXT_MAX-1) plain[j+1] = '\0';
     }
     printf("    From server: %s", plain);
 
-    if(exiting("Server", plain) == 1)break; //Checks for stop-word
+    if (exiting("Server", plain) == 1) break; //Checks for stop-word
 
     crypto_wipe(plain, TEXT_MAX); //Clear plain
 
@@ -385,7 +399,7 @@ static void key_exc_ell(int sockfd)
  kdf(writing_key, your_sk, their_first_pk, KEYSZ, CLIENT);
 
  // Asking and checking PIN for SK from user
- pin_cheker(plain_key);
+ pin_checker(plain_key);
 
  // Compute keyed MAC of our writing key
  crypto_blake2b_keyed(mac_us, MACSZ, plain_key, KEYSZ, writing_key, KEYSZ);
@@ -401,7 +415,7 @@ static void key_exc_ell(int sockfd)
  unpad_array(mac_thm, padded_mac_thm, MACSZ); 
 
  // Checking if server is legit(if it owns shared SK)
- if(crypto_verify16(mac_us, mac_thm) == -1){
+ if (crypto_verify16(mac_us, mac_thm) == -1) {
      exit_with_error(UNEQUAL_MAC,"Other side isn`t legit, aborting");
  }
  
@@ -438,7 +452,7 @@ static void key_exc_ell(int sockfd)
  unpad_array(mac_thm, padded_mac_thm, MACSZ); 
 
  // Checking if server is legit(if it owns shared SK)
- if(crypto_verify16(mac_us, mac_thm) == -1){
+ if (crypto_verify16(mac_us, mac_thm) == -1) {
      exit_with_error(UNEQUAL_MAC,"Other side isn`t legit, aborting");
  }
  
@@ -464,23 +478,24 @@ int main(int argc, char *argv[])
  change default IP of server(loopback) and port
  */
  if (argc >= 2) { //Checking if arguments exsist
-    if(argv[1][0] != '\0'){ // Port/Help argument is not empty
+    if (argv[1][0] != '\0') { // Port/Help argument is not empty
 
         /*Print help*/
-        if(strcmp(argv[1],"/h") == 0)help_print(CLIENT,PORT,IP,MAX);
+        if (strcmp(argv[1],"/h") == 0) help_print(CLIENT,PORT,IP,MAX);
             
         /*Changing var value to user-defined port*/
         port = atoi(argv[1]); 
         /*Checking port*/
-        if(!(port > PORT_START && port <= PORT_END)){
+        if (!(port > PORT_START && port <= PORT_END)) {
             exit_with_error(ERROR_PORT_INPUT,"Invalid port"); 
         }
     }   
-    if(argc == 3 && argv[2][0] != '\0'){ // IP argument is not empty       
+    if (argc == 3 && argv[2][0] != '\0') { // IP argument is not empty       
             
         /*Checking IP for size*/
-        if(strlen(argv[2]) >= IPSZ)
+        if (strlen(argv[2]) >= IPSZ) {
             exit_with_error(ERROR_IP_INPUT,"Invalid IP(Too long)"); 
+        }
             
         strcpy(ip,argv[2]); //Copy for checking format of entered IP
         ip_check(argv[2]); //Check of ip

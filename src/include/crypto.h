@@ -1,9 +1,9 @@
 // Client-server api              //
 // Cryptographic functions        //
-// Version 0.6.5                  //
+// Version 0.7.0                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 05.12.2024                     //
+// 16.12.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
@@ -19,48 +19,81 @@ are in crypto.c.
 ///   PADME   ///
 /////////////////
 /*
-This function purpose is to derive size of padded array from original
-message size. This functions implements PADME algorithm without rounding
-with bitmask(PADME: https://lbarman.ch/blog/padme/)
+This function derives the size of the padded array from the original
+message size. It implements the PADME algorithm without rounding
+using a bitmask (PADME: https://lbarman.ch/blog/padme/).
+Parameters:
+- `L`: The size of the original message (L16, L24, or L32).
+Returns:
+- The size of the padded message.
 */
 int padme_size(const int L);
 
 /*
-Padding of array(copying to an array of bigger size 
-and additional space is filled with random data)
+Padding of array (copying to an array of larger size 
+and the additional space is filled with random data).
+Takes as input: 
+- `array`: The original array to be padded.
+- `pad_array`: The array where the padded data will be stored.
+- `og_size`: The original size of the array.
+- `new_size`: The size of the padded array.
+The function copies the original array to the new padded array and fills 
+the remaining space with random data.
 */
 void pad_array(const uint8_t* array, uint8_t* pad_array, const int og_size, const int new_size);
 
-//Reverse of pad_array
-void unpad_array(uint8_t* array, const uint8_t* pad_array, const int og_size);
-/////////////////
-/////////////////
-
-///////////////////////////////
-/// KDF with Blake2b///
-//////////////////////////////
 /*
-This function purpose is to derive shared key from 
-raw shared key and PKs of both sides.
-The last parameter(int side) is a switch to use specific 
-order for a specific side(server and client),basically it 
-defines what side called this function
+Reverse of pad_array function. This function copies the original 
+(unpadded) data from the padded array back to the original array size.
+Takes as input:
+- `array`: The original array where the data will be copied.
+- `pad_array`: The padded array from which data will be copied.
+- `og_size`: The original size of the array.
+The function restores the original data size from the padded array.
+*/
+void unpad_array(uint8_t* array, const uint8_t* pad_array, const int og_size);
+
+/*
+This function derives a shared key using the Blake2b KDF 
+(Key Derivation Function) from the raw shared key and the public keys (PKs) 
+of both sides.
+Parameters:
+- `shared_key`: A pointer to the buffer where the derived shared key will be 
+  stored.
+- `your_sk`: A pointer to your private key.
+- `their_pk`: A pointer to the other party's public key.
+- `keysz`: The size of the keys.
+- `side`: A switch to define the specific order of the keys for either the 
+  server or client side. This parameter determines the role 
+  (server or client) of the party calling the function.
+The function uses the provided private and public keys to generate the 
+shared key in KDF function using Blake2b.
 */
 void kdf(uint8_t *shared_key, const uint8_t *your_sk, const uint8_t *their_pk, const int keysz, const int side);
 ///////////////////////////////
 ///////////////////////////////
 
-/////////////////////////////////////////
-/// Function for generating hidden PKs///
-/////////////////////////////////////////
 /*
-This function takes two empty arrays for keys
-generates tweak for Elligator, next in infinite cycle
-it generates SK and derives PK from it. If that PK
-can be mapped to a random string with Elligator 2 cycle ends,
-if not it continues and new SKs and PKs are generated
+This function generates hidden public keys (PKs) using the Elligator 2 
+algorithm. It takes two empty arrays to store the generated keys and 
+performs the following steps:
+1. Generates a tweak for Elligator.
+2. In an infinite loop, it generates a private key (SK) and derives 
+the corresponding public key (PK).
+3. It checks if the generated PK can be mapped to a random string using the 
+Elligator 2 cycle.
+4. If the PK can be mapped to a random string, the cycle ends. 
+If not, the function continues generating new SKs and PKs until a valid one 
+is found.
+Parameters:
+- `your_sk`: A pointer to the buffer where the generated private key (SK) 
+  will be stored.
+- `your_pk`: A pointer to the buffer where the derived public key (PK) 
+  will be stored.
+- `keysz`: The size of the keys (both SK and PK).
 */
 void key_hidden(uint8_t *your_sk, uint8_t *your_pk, const int keysz);
 /////////////////////////////////////////
 /////////////////////////////////////////
+
 #endif

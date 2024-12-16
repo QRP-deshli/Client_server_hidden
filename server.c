@@ -1,9 +1,9 @@
 // Client-server api              //
 // Client side                    //
-// Version 0.6.5                  //
+// Version 0.7.0                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 05.12.2024                     //
+// 16.12.2024                     //
 // Nikita Kuropatkin              //
 
 /*
@@ -50,6 +50,20 @@ AEAD - authenticated encryption with additional data
 
 //////////Version history//////////
 /*
+Version 0.7.0:
+# The long-term shared key is now read from a `.txt` file on the server 
+  side as well.
+# Refactored help comments: added explanations for every input value and 
+  functionality.
+# Migration from using one shared encryption key on both sides to two keys 
+  (`writing_key` and `reading_key`) like in a DH Ratchet structure 
+  (with only 2 iterations).
+# Corrected some mistakes in the ReadMe and comments.
+# Added a memory allocation check in the `decompress` function in 
+  `compress_decompress.c`.
+# Changed the structure of `padme_size` to be more lightweight, because 
+  the `log2` function is now called during preprocessing.
+# Migrated header files (`.h`) to `src/include`.
 Version 0.6.5 :
 # Added txt file-reader for reading key and salt on clients side
 # Added more macros and created new file for them macros.h
@@ -130,7 +144,7 @@ will queue for a socket.
 */
 #define BACKLOG 3
 
-/*Path to a txt file of servers key*/
+/*Path to a txt file of servers long-term shared key*/
 #define KEY_PATH "src/server/server_key.txt"
 
 /////////////////////
@@ -165,20 +179,20 @@ static int sockct_opn(int *sockfd,int port)
  servaddr.sin_port = htons(port);
 
  // Bind the socket(with error handling)
- if (bind(*sockfd, (SA*)&servaddr, sizeof(servaddr)) == -1){
+ if (bind(*sockfd, (SA*)&servaddr, sizeof(servaddr)) == -1) {
     sockct_cls(*sockfd);
     exit_with_error(ERROR_BINDING, "Socket bind failed");
  }
- else{
+ else {
     printf("Socket successfully binded..\n");
  }
 
  // Listen for incoming connections
- if (listen(*sockfd, BACKLOG) == -1){// Checking if listening failed
+ if (listen(*sockfd, BACKLOG) == -1) {// Checking if listening failed
     sockct_cls(*sockfd);
     exit_with_error(ERROR_SOCKET_LISTENING, "Listen failed");
  }
- else{
+ else {
     printf("Server listening..\n");
  }
 
@@ -187,11 +201,11 @@ static int sockct_opn(int *sockfd,int port)
 
  // Accept a connection
  connfd = accept(*sockfd, (SA*)&cli, &len);
- if(connfd == -1){// Check for error 
+ if (connfd == -1) {// Check for error 
     sockct_cls(*sockfd);
     exit_with_error(ERROR_SERVER_ACCEPT, "Server accept failed");
  }
- else{
+ else {
     printf("Server accept the client...\n");
  }
  return connfd;
@@ -294,14 +308,13 @@ static void chat(uint8_t* reading_key, uint8_t* writing_key, int sockfd)
     }
      
     // Decompress unencrypted text
-    decompress_text((uint8_t*)compr, (uint8_t*)plain, compr_size);
+    decompress_text((uint8_t*)compr, MAX, (uint8_t*)plain, compr_size);
 
     /* 
      Inserting terminator at the actual end 
      of string to avoid showing another garbage
     */
-    for(int j = 0; j < TEXT_MAX; j++) 
-    {
+    for (int j = 0; j < TEXT_MAX; j++) {
         if(plain[j] == '\n' && j != TEXT_MAX-1) plain[j+1] = '\0';
     }
 
@@ -309,7 +322,7 @@ static void chat(uint8_t* reading_key, uint8_t* writing_key, int sockfd)
     printf("    From client: %s", plain);
         
     // Check for stop-word
-    if(exiting("Client", plain) == 1)break; 
+    if (exiting("Client", plain) == 1) break; 
 
     // Clear buffers
     memset(buff, 0, MAX);
@@ -327,8 +340,8 @@ static void chat(uint8_t* reading_key, uint8_t* writing_key, int sockfd)
     // Buffer overflow, clear stdin
     if (plain[strlen(plain) - 1] != '\n') {
         printf("Your message was too long, boundaries is: %d symbols,"
-                   "only those will be sent.\n",TEXT_MAX);
-        clear();// clearing stdin
+               "only those will be sent.\n",TEXT_MAX);
+        clear();
         plain[strlen(plain) - 1] = '\n';
     }
 
@@ -351,7 +364,7 @@ static void chat(uint8_t* reading_key, uint8_t* writing_key, int sockfd)
     write_win_lin(sockfd, (uint8_t*)buff, compr_size);
 
     // Check for exit command (again, to exit the loop)
-    if(exiting("Server", plain) == 1)break; //checks for stop-word
+    if (exiting("Server", plain) == 1) break; //checks for stop-word
 
     crypto_wipe(plain, MAX);// clear plain
     }
@@ -435,7 +448,7 @@ static void key_exc_ell(int sockfd)
  write_win_lin(sockfd, padded_mac_us, pad_size_mac);
 
  // Checking if server is legit(if it owns shared SK)
- if(crypto_verify16(mac_us, mac_thm) == -1){
+ if (crypto_verify16(mac_us, mac_thm) == -1) {
     exit_with_error(UNEQUAL_MAC,"Other side isn`t legit, aborting");
  }
 
@@ -471,7 +484,7 @@ static void key_exc_ell(int sockfd)
  write_win_lin(sockfd, padded_mac_us, pad_size_mac);
 
  // Checking if server is legit(if it owns shared SK)
- if(crypto_verify16(mac_us, mac_thm) == -1){
+ if (crypto_verify16(mac_us, mac_thm) == -1) {
     exit_with_error(UNEQUAL_MAC,"Other side isn`t legit, aborting");
  }
  
@@ -497,12 +510,13 @@ int main(int argc, char *argv[])
  if (argc == 2 && argv[1][0] != '\0') { 
 
     /*Print help*/
-    if(strcmp(argv[1],"/h") == 0)help_print(SERVER,PORT,NULL,MAX); 
+    if (strcmp(argv[1],"/h") == 0) help_print(SERVER,PORT,NULL,MAX); 
 
     port =  atoi(argv[1]); //Changing var value to user-defined port
     /*Checking port*/
-    if(!(port > PORT_START && port <= PORT_END))
+    if (!(port > PORT_START && port <= PORT_END)) {
         exit_with_error(ERROR_PORT_INPUT,"Invalid port"); 
+    }
  }
 
  int sockfd;

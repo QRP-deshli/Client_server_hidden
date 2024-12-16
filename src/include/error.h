@@ -1,9 +1,9 @@
 // Client-server api              //
 // Error handling                 //
-// Version 0.6.5                  //
+// Version 0.7.0                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 05.12.2024                     //
+// 16.12.2024                     //
 // Nikita Kuropatkin              //
 
 /*
@@ -37,14 +37,18 @@ that ends program and returns error code value
 #define TEXT_OVERFLOW 18
 #define ERROR_OPENING_FILE 19
 #define WRONG_TXT_FORMAT 20
+#define UNSUPPORTED_SIZE 21
 
 //////////////////////////////////////////
 /// Error printing ///
 //////////////////////////////////////////
 /*
-This function purpose is to print errors in main code`s
-You can choose where to print error stderr or stdout by switching 
-macro OUT. Switch macro DEBUG to 0, to not print anything.
+The purpose of this function is to print errors defined by the variable 
+error and the error message contained in the variable err_string. 
+The function exits with the return value specified by error.
+You can choose where to print the error message — either to stderr or stdout 
+— by switching the PRINT macro. 
+To suppress all output, set the DEBUG macro to YES.
 */
 void exit_with_error(const int error, const char * err_string);
 //////////////////////////////////////////

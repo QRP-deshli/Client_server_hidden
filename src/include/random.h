@@ -1,9 +1,9 @@
 // Client-server api              //
 // Random number generator        //
-// Version 0.6.5                  //
+// Version 0.7.0                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 05.12.2024                     //
+// 16.12.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
@@ -16,12 +16,15 @@ are in random.c.
 #include <stdint.h>
 
 //////////////////////////////////////////
-/// Random numbers generator ///
+/// Random Numbers Generator ///
 //////////////////////////////////////////
 /*
-This function purpose is to generate random bits 
-and fill received array with them.
-This function works for Win and Lin.
+The purpose of this function is to generate random bytes  
+and fill the provided array with them.  
+It takes the following parameters:  
+- `buffer` - an array to be filled with random bytes.  
+- `size` - the number of random bytes to generate and store in the buffer.  
+This function works on both Windows (WIN) and Linux (LIN).
 */
 void random_num(uint8_t * number, const int size);
 //////////////////////////////////////////

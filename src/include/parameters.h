@@ -1,9 +1,9 @@
 // Client-server api              //
 // Additional functions           //
-// Version 0.6.5                  //
+// Version 0.7.0                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 05.12.2024                     //
+// 16.12.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
@@ -16,7 +16,7 @@ Read the comments next to each macro for an explanation of its purpose.
 
 /*
 Message size, can be changed at your preference.
-This size means amount of characters that will be readed from 
+This size means maximum amount of characters that will be readed from 
 stdin to send it.
 */
 #define TEXT_MAX 400 
@@ -36,15 +36,15 @@ of uint8_t array, that will contain uint32_t number
 
 /*
 Changing this sizes can create security risks or program instability!
-If you need different key or nonce sizes, pls read whole code before
-and consider using different functions from Monocypher
+If you need different key or nonce sizes, pls read whole code before doing 
+it and consider using different functions from Monocypher
 */
 #define KEYSZ 32   // SK, PK, Hidden PK sizes
 #define NONSZ 24   // Nonce size
 #define MACSZ 16   // MAC size
 
 /*
-Default port number value, will be used if user didn`t specify another
+Default port number value; will be used if user didn`t specify another
 port number while running program.
 */
 #define PORT 8087 

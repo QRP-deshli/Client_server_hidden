@@ -2,7 +2,7 @@
 Program pre sifrovanu komunikaciu klient-server so steganografickou podporou
 (Elligator 2 a PADME)
 --------------------------------------------------------------------------------
-2024-05-12, v.0.6.5, Nikita Kuropatkin KEMT FEI TUKE
+2024-16-12, v.0.7.0, Nikita Kuropatkin KEMT FEI TUKE
 
 Zakladny ciel programu:
 ---------------------------
@@ -163,7 +163,7 @@ Navod na pouzitie:
 Program je kompatabilny pre Windows a Linux:
 
 #Windows Verzie nastrojov: 
-GCC 13.2.0 
+GCC 14.2.0 
 MinGW-64 12.0.0
 Minimalna verzia cmake: 3.10
 
@@ -258,6 +258,7 @@ Minimalna verzia cmake: 3.10
      19 - chyba: zlyhalo otvorenie suboru(File not found).
      20 - chyba: nespravny format data v txt subore.
      (Data musia byt ulozene v hexadecimalnej podobe).
+     21 - chyba: nepodporovany rozmer pre vyplnenie.
 
  ################
 # Zdroje #

@@ -1,9 +1,9 @@
 // Client-server api              //
 // PIN functions                  //
-// Version 0.6.5                  //
+// Version 0.7.0                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 05.12.2024                     //
+// 16.12.2024                     //
 // Nikita Kuropatkin              //
 
 #include <stdio.h>
@@ -27,16 +27,24 @@
 /*Function to free memory of Argon`s work_area*/
 #define FREE_WORK_AREA(ptr)      free(ptr) 
 
-/////////////////////////////////////////////////
-/// Function that XORs hashed pin with key    ///
-/////////////////////////////////////////////////
 /*
-This function takes inputed key and hashed_pin 
-and XOR every element of them.
-It provides transforming a plain key to a key secured by PIN 
-or key secured by PIN to plain.
+This function takes an input key and a hashed PIN, and performs an 
+XOR operation on each corresponding element of both arrays. 
+The function can be used to:
+- Transform a plain key into a key secured by a PIN.
+- Convert a key secured by a PIN back to its original plain form.
+Parameters:
+- `result_key`: A pointer to the buffer where the result of the 
+   XOR operation will be stored.
+- `working_key`: A pointer to the working key that will be XORed with 
+  the hashed PIN.
+- `hashed_pin`: A pointer to the hashed PIN that will be used for the 
+  XOR operation.
+Each byte of the `working_key` is XORed with the corresponding byte of the 
+`hashed_pin` to generate the `result_key`.
 */
 void xor_with_key(uint8_t *result_key, const uint8_t *working_key, const uint8_t *hashed_pin)
+
 {
  for (size_t i = 0; i < HASHSZ; i++) {
     result_key[i] = working_key[i] ^ hashed_pin[i];
@@ -45,14 +53,18 @@ void xor_with_key(uint8_t *result_key, const uint8_t *working_key, const uint8_t
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 
-/////////////////////////////////////////////////
-/// Function that hashes pin with Argon2i     ///
-/////////////////////////////////////////////////
 /*
-This function purpose is to take inputed pin and hash it using Argon2i
-Value of hash will be written to vatiable hashed_pin.
-Parameters for Argon are defined and commented in code
-(can be modified, but very carefully)
+This function takes an input PIN and hashes it using the Argon2i algorithm. 
+The Argon2i parameters used in this function are predefined in the code and 
+can be modified, but changes should be made with caution to ensure security 
+and proper functioning.
+Parameters:
+- `pin`: A pointer to the input PIN that will be hashed.
+- `hashed_pin`: A pointer to the buffer where the resulting hashed PIN will 
+  be stored.
+- `salt`: A pointer to the salt that will be used in the hashing process.
+The function uses Argon2i to hash the `pin` with the provided `salt` and 
+stores the result in the `hashed_pin`.
 */
 void hashing_pin(uint8_t *pin, uint8_t *hashed_pin, uint8_t *salt) {
  /*Configuring Argon2 for PIN hashing*/
@@ -86,16 +98,18 @@ void hashing_pin(uint8_t *pin, uint8_t *hashed_pin, uint8_t *salt) {
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////
-/// Function that asks users PIN for long-term SK       ///
-///////////////////////////////////////////////////////////
 /*
-This function purpose is to ask user for his PIN, entered PIN will be
-XORed with key material stored it client\secret.h, if PIN is right
-client side will be authenticated, wheater it is not communacation will
-end
+This function prompts the user to enter their PIN. 
+The entered PIN is then XORed with key material stored in `client/secret.h`.
+If the PIN is correct, the client side will be authenticated. 
+If the PIN is incorrect, the communication will end.
+Parameters:
+- `plain_key`: A pointer to the key material that will be XORed with 
+the entered PIN. This key is used for authentication.
+The function ensures that only users with the correct PIN can authenticate 
+successfully, allowing further communication to proceed.
 */
-void pin_cheker(uint8_t *plain_key) {
+void pin_checker(uint8_t *plain_key) {
  char pin[NONSZ]; // bigger size for checking
  uint8_t hashed_pin[HASHSZ]; //hashed value of pin
  /*Key secured by PIN that contained in src/client/key.txt*/
@@ -109,9 +123,8 @@ void pin_cheker(uint8_t *plain_key) {
 /*
  Checking if user entered digits for PIN(not other characters)
 */
- for(int i = 0; i < PINSZ; i++)
- {
-    if (pin[i] < '0' || pin[i] > '9'){
+ for (int i = 0; i < PINSZ; i++) {
+    if (pin[i] < '0' || pin[i] > '9') {
        exit_with_error(WRONG_PIN_FORMAT,"PIN must be digits(0-9)!");
     }
  }
