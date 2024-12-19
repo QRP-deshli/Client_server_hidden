@@ -15,6 +15,12 @@
 #include "../include/error.h"
 #include "../include/txt_reader.h"
 
+/*!DEMO!*/
+/* Macros for deciding the type of allocation */
+#define STATIC 0
+#define DYNAMIC 1
+#define ALLOCATION STATIC  // Set ALLOCATION to STATIC or DYNAMIC
+
 /*Path to a txt file of clients key(secured by PIN)*/
 #define KEY_PATH "src/client/client_key.txt"
 /*Path to a txt file of salt*/
@@ -24,8 +30,17 @@
 
 /*Function to allocate memory for Argon`s work_area*/
 #define ALLOCATE_WORK_AREA(size) malloc(size) 
-/*Function to free memory of Argon`s work_area*/
-#define FREE_WORK_AREA(ptr)      free(ptr) 
+
+/*
+ Macro function to de-allocate work_area memory.
+ If ALLOCATION is set to STATIC, does nothing.
+ If ALLOCATION is set to DYNAMIC, frees the allocated memory.
+*/
+#if ALLOCATION == DYNAMIC
+  #define FREE_WORK_AREA(ptr) free(ptr)
+#else
+  #define FREE_WORK_AREA(ptr)  // No action for STATIC allocation
+#endif
 
 /*
 This function takes an input key and a hashed PIN, and performs an 
@@ -82,18 +97,26 @@ void hashing_pin(uint8_t *pin, uint8_t *hashed_pin, uint8_t *salt) {
  };       
  crypto_argon2_extras extras = {0};   /* Extra parameters unused */
 
- void *work_area = ALLOCATE_WORK_AREA((size_t)BLOCK_AMOUNT * 1024);
- if (work_area == NULL) {
+ /*
+  Working memory for LZRW3a compression.
+  The allocation type is determined based on the ALLOCATION flag.
+  In future versions, this should be refactored to allow decisions at 
+  preprocessing time.
+ */
+ #if ALLOCATION == DYNAMIC
+   void *work_area = ALLOCATE_WORK_AREA((size_t)BLOCK_AMOUNT * 1024);
+   if (work_area == NULL) {
     crypto_wipe(pin, PINSZ);//wiping PIN, cause it`s not longer needed
     crypto_wipe(salt, SALTSZ); //wiping salt, cause it`s not longer needed
     exit_with_error(ALLOCATION_ERROR,"Memory allocation failed");
- }
- else {
-    crypto_argon2(hashed_pin, HASHSZ, work_area,config, inputs, extras);
-    crypto_wipe(pin, PINSZ); //wiping PIN, cause it`s not longer needed
-    crypto_wipe(salt, SALTSZ); //wiping salt, cause it`s not longer needed
-    FREE_WORK_AREA(work_area); //free memory after usage of Argon
- }
+   }
+ #else
+   static uint8_t work_area[BLOCK_AMOUNT * 1024] __attribute__((aligned(8)));
+ #endif
+ crypto_argon2(hashed_pin, HASHSZ, work_area,config, inputs, extras);
+ crypto_wipe(pin, PINSZ); //wiping PIN, cause it`s not longer needed
+ crypto_wipe(salt, SALTSZ); //wiping salt, cause it`s not longer needed
+ FREE_WORK_AREA(work_area); //free memory after usage of Argon
 }
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
