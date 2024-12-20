@@ -1,5 +1,14 @@
+// Client-server api              //
+// Compression Algorithm          //
+// Version 0.7.5                  //
+// Bachelor`s work project        //
+// Technical University of Kosice //
+// 20.12.2024                     //
+// Nikita Kuropatkin              //
+
 /******************************************************************************/
-/*                             MODIFICATIONS(NK)                              */
+/*                      MODIFICATIONS(Nikita Kuropatkin)                      */
+/*                                                                            */
 /*     To compile this code without warnings from GCC I needed to add a few   */
 /*     lines, that do nothing and delete keyword "static" before struct       */
 /*     identity:                                                              */

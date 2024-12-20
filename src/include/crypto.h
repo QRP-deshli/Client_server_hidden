@@ -1,9 +1,9 @@
 // Client-server api              //
 // Cryptographic functions        //
-// Version 0.7.0                  //
+// Version 0.7.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 16.12.2024                     //
+// 20.12.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
@@ -32,13 +32,13 @@ int padme_size(const int L);
 /*
 Padding of array (copying to an array of larger size 
 and the additional space is filled with random data).
+The function copies the original array to the new padded array and fills 
+the remaining space with random data.
 Takes as input: 
 - `array`: The original array to be padded.
 - `pad_array`: The array where the padded data will be stored.
 - `og_size`: The original size of the array.
 - `new_size`: The size of the padded array.
-The function copies the original array to the new padded array and fills 
-the remaining space with random data.
 */
 void pad_array(const uint8_t* array, uint8_t* pad_array, const int og_size, const int new_size);
 
@@ -49,14 +49,14 @@ Takes as input:
 - `array`: The original array where the data will be copied.
 - `pad_array`: The padded array from which data will be copied.
 - `og_size`: The original size of the array.
-The function restores the original data size from the padded array.
 */
 void unpad_array(uint8_t* array, const uint8_t* pad_array, const int og_size);
 
 /*
 This function derives a shared key using the Blake2b KDF 
 (Key Derivation Function) from the raw shared key and the public keys (PKs) 
-of both sides.
+of both sides. Firstly it will generate your PK from your SK, than 
+it will use it, PK of other side and shared_secret to derive strong key
 Parameters:
 - `shared_key`: A pointer to the buffer where the derived shared key will be 
   stored.
@@ -66,8 +66,6 @@ Parameters:
 - `side`: A switch to define the specific order of the keys for either the 
   server or client side. This parameter determines the role 
   (server or client) of the party calling the function.
-The function uses the provided private and public keys to generate the 
-shared key in KDF function using Blake2b.
 */
 void kdf(uint8_t *shared_key, const uint8_t *your_sk, const uint8_t *their_pk, const int keysz, const int side);
 ///////////////////////////////
@@ -95,5 +93,6 @@ Parameters:
 void key_hidden(uint8_t *your_sk, uint8_t *your_pk, const int keysz);
 /////////////////////////////////////////
 /////////////////////////////////////////
+
 
 #endif

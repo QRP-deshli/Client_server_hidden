@@ -39,6 +39,7 @@ Version 0.1 - basic functionality
 #include "monocypher.h"
 #include "client/pin.h"
 #include "txt_reader.h"
+#include "parameters.h"
 
 /*
 Macros below defines mode of this program
@@ -54,9 +55,9 @@ Set MODE to CHANGE_PIN if you want to change pin for key
 #define MODE CHANGE_PIN
 
 /*Path to a txt file of clients key*/
-#define KEY_PATH "../src/client/client_key.txt"
+#define KEY_PATH_CHANGER "../src/client/client_key.txt"
 /*Path to a txt file of salt*/
-#define SALT_PATH "../src/client/salt.txt"
+#define SALT_PATH_CHANGER "../src/client/salt.txt"
 /*Path to a txt file of new PIN*/
 #define NEW_PIN_PATH "new_pin.txt"
 /*Path to a txt file of old PIN*/
@@ -72,8 +73,6 @@ The printed key must be manually copied and saved to
 `src/client/client_key.txt`.
 Parameters:
 - `finish_key`: A pointer to the key that will be printed. 
-This function serves to display the secured key, making it easier for the 
-user to transfer or store the key in a secure file.
 */
 static void print_key(const uint8_t *finish_key)
 {
@@ -205,8 +204,8 @@ int main()
  /*Your new PIN, that is contained in new_pin.txt(current folder)*/
  uint8_t new_pin[PINSZ]; 
 
- read_from_txt(KEY_PATH, shared_key, HASHSZ); //Reading key from txt
- read_from_txt(SALT_PATH, salt, SALTSZ); //Reading salt from txt
+ read_from_txt(KEY_PATH_CHANGER, shared_key, HASHSZ); //Reading key from txt
+ read_from_txt(SALT_PATH_CHANGER, salt, SALTSZ); //Reading salt from txt
  read_from_txt(NEW_PIN_PATH, new_pin, PINSZ); //Reading new PIN from txt
  cast(new_pin); //Casting PIN to char values(from uint8_t value)
 

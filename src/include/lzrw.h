@@ -1,5 +1,13 @@
+// Client-server api              //
+// Compression Algorithm          //
+// Version 0.7.5                  //
+// Bachelor`s work project        //
+// Technical University of Kosice //
+// 20.12.2024                     //
+// Nikita Kuropatkin              //
+
 /******************************************************************************/ 
-/*                             MODIFICATIONS (NK)                             */
+/*                      MODIFICATIONS (Nikita Kuropatkin)                     */
 /*                                                                            */
 /*     For static memory allocation, I need a constant variable that holds    */
 /*     the desired memory size. I cannot use the function uint32_t            */

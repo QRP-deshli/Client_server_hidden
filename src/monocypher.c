@@ -1,3 +1,11 @@
+// Client-server api              //
+// Cryptographic library          //
+// Version 0.7.5                  //
+// Bachelor`s work project        //
+// Technical University of Kosice //
+// 20.12.2024                     //
+// Nikita Kuropatkin              //
+
 // Monocypher version __git__
 //
 // This file is dual-licensed.  Choose whichever licence you want from

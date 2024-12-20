@@ -1,9 +1,9 @@
 // Client-server api              //
 // Additional functions           //
-// Version 0.7.0                  //
+// Version 0.7.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 16.12.2024                     //
+// 20.12.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
@@ -32,12 +32,12 @@ void clear (void);
 /*
 The purpose of this function is to terminate the program  
 when a stop-word is detected in the message.  
-- The `side` variable is a modifier for the message that indicates  
-  who ended the communication.  
-- The stop-word can be configured by changing the `EXIT` macro.  
 The function returns a value of 1 if the stop-word is detected.  
 After returning, the program (server or client) proceeds with  
 closing the communication session as normal.
+- The `side` variable is a modifier for the message that indicates  
+  who ended the communication.  
+- The stop-word can be configured by changing the `EXIT` macro.  
 */
 int exiting (const char *side, const char *msg);
 ///////////////////////////
@@ -49,10 +49,10 @@ int exiting (const char *side, const char *msg);
 /*
 The purpose of this function is to check whether the  
 user has entered a valid IP address in the correct format.  
-It takes the following parameter:  
-- `ip` - contains the IP address to be validated.  
 If the entered IP address is not valid (not correctly formatted),  
 the program exits.  
+It takes the following parameter:  
+- `ip` - contains the IP address to be validated.  
 
 Valid format examples:  
 - Dotted decimal format: 192.168.0.1  

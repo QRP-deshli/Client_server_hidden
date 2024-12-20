@@ -1,9 +1,9 @@
 // Client-server api              //
 // Compression functions          //
-// Version 0.7.0                  //
+// Version 0.7.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 16.12.2024                     //
+// 20.12.2024                     //
 // Nikita Kuropatkin              //
 
 /* 
@@ -21,14 +21,14 @@ LZRW3a: http://www.ross.net/compression/lzrw3a.html
 /// uint32_t to uint8_t Array Converter   ///
 /////////////////////////////////////////////
 /*
-This function takes the following parameters:  
-- `number` - a `uint32_t` number that will be converted.  
-- `byte_array` - a pointer to a `uint8_t` array (byte array) where the 
-  converted value will be stored.  
 The function converts the `uint32_t` number to a byte array and writes 
 it in Big Endian format.  
 This function is needed to send the size of the compressed text to the 
 other side.
+This function takes the following parameters:  
+- `number` - a `uint32_t` number that will be converted.  
+- `byte_array` - a pointer to a `uint8_t` array (byte array) where the 
+  converted value will be stored.  
 */
 void to_byte_array(const uint32_t number, uint8_t* byte_array);
 /////////////////////////////////////////////
@@ -39,12 +39,12 @@ void to_byte_array(const uint32_t number, uint8_t* byte_array);
 /////////////////////////////////////////////
 /*
 This function takes the following parameters:  
-- `number` - a `uint32_t` variable where the converted value will be stored.  
-- `byte_array` - a pointer to a `uint8_t` array (byte array) 
-  that is in Big Endian format.  
 The function converts the Big Endian byte array to a `uint32_t` number.  
 This function is needed to send the size of the compressed text 
 to another side.
+- `number` - a `uint32_t` variable where the converted value will be stored.  
+- `byte_array` - a pointer to a `uint8_t` array (byte array) 
+  that is in Big Endian format.  
 */
 uint32_t from_byte_array( const uint8_t* byte_array, uint32_t number);
 /////////////////////////////////////////////
@@ -54,14 +54,14 @@ uint32_t from_byte_array( const uint8_t* byte_array, uint32_t number);
 /// Text Compressors  ///
 /////////////////////////
 /*
+The function compresses `input_txt` using the LZRW3a algorithm,  
+and the compressed text is written to `output_txt`. 
 This function takes the following parameters:  
 - `input_txt` - the uncompressed text to be compressed.  
 - `max_size` - the maximum size that the compressed text can have.  
 - `output_txt` - a pointer to the buffer where the compressed text 
   will be stored.  
 - `output_size` - a pointer to the size of the compressed text.  
-The function compresses `input_txt` using the LZRW3a algorithm,  
-and the compressed text is written to `output_txt`.  
 
 If the compressed text exceeds the size of `output_txt`, the program 
 will exit. This is highly unlikely, as the buffer is 100 characters larger 
@@ -80,14 +80,15 @@ void compress_text(unsigned char *input_txt, const uint32_t max_size, unsigned  
 /// Text Decompressors  ///
 ///////////////////////////
 /*
+The function decompresses `input_txt` using the LZRW3a algorithm,  
+and the decompressed text is written to `output_txt`. 
 This function takes the following parameters:  
 - `input_txt` - the compressed text to be decompressed.  
 - `max_size` - the maximum size that the decompressed text can have.  
 - `input_size` - the size of the compressed text.  
 - `output_txt` - a pointer to the buffer where the decompressed 
   text will be stored.  
-The function decompresses `input_txt` using the LZRW3a algorithm,  
-and the decompressed text is written to `output_txt`.  
+ 
 For more information on LZRW3a, see:  
 LZRW3-A: http://www.ross.net/compression/lzrw3a.html
 */

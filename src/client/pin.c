@@ -1,9 +1,9 @@
 // Client-server api              //
 // PIN functions                  //
-// Version 0.7.0                  //
+// Version 0.7.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 16.12.2024                     //
+// 20.12.2024                     //
 // Nikita Kuropatkin              //
 
 #include <stdio.h>
@@ -11,40 +11,15 @@
 #include <stdlib.h>
 #include "../include/client/pin.h"
 #include "../include/monocypher.h"
-#include "../include/parameters.h"
+#include "../include/parameters.h" //Macros are defined here
 #include "../include/error.h"
 #include "../include/txt_reader.h"
-
-/*!DEMO!*/
-/* Macros for deciding the type of allocation */
-#define STATIC 0
-#define DYNAMIC 1
-#define ALLOCATION STATIC  // Set ALLOCATION to STATIC or DYNAMIC
-
-/*Path to a txt file of clients key(secured by PIN)*/
-#define KEY_PATH "src/client/client_key.txt"
-/*Path to a txt file of salt*/
-#define SALT_PATH "src/client/salt.txt"
-
-#define BLOCK_AMOUNT 100000 // Define the number of blocks for Argon2
-
-/*Function to allocate memory for Argon`s work_area*/
-#define ALLOCATE_WORK_AREA(size) malloc(size) 
-
-/*
- Macro function to de-allocate work_area memory.
- If ALLOCATION is set to STATIC, does nothing.
- If ALLOCATION is set to DYNAMIC, frees the allocated memory.
-*/
-#if ALLOCATION == DYNAMIC
-  #define FREE_WORK_AREA(ptr) free(ptr)
-#else
-  #define FREE_WORK_AREA(ptr)  // No action for STATIC allocation
-#endif
 
 /*
 This function takes an input key and a hashed PIN, and performs an 
 XOR operation on each corresponding element of both arrays. 
+Each byte of the `working_key` is XORed with the corresponding byte of the 
+`hashed_pin` to generate the `result_key`.
 The function can be used to:
 - Transform a plain key into a key secured by a PIN.
 - Convert a key secured by a PIN back to its original plain form.
@@ -55,8 +30,6 @@ Parameters:
   the hashed PIN.
 - `hashed_pin`: A pointer to the hashed PIN that will be used for the 
   XOR operation.
-Each byte of the `working_key` is XORed with the corresponding byte of the 
-`hashed_pin` to generate the `result_key`.
 */
 void xor_with_key(uint8_t *result_key, const uint8_t *working_key, const uint8_t *hashed_pin)
 
@@ -73,13 +46,13 @@ This function takes an input PIN and hashes it using the Argon2i algorithm.
 The Argon2i parameters used in this function are predefined in the code and 
 can be modified, but changes should be made with caution to ensure security 
 and proper functioning.
+The function uses Argon2i to hash the `pin` with the provided `salt` and 
+stores the result in the `hashed_pin`.
 Parameters:
 - `pin`: A pointer to the input PIN that will be hashed.
 - `hashed_pin`: A pointer to the buffer where the resulting hashed PIN will 
   be stored.
 - `salt`: A pointer to the salt that will be used in the hashing process.
-The function uses Argon2i to hash the `pin` with the provided `salt` and 
-stores the result in the `hashed_pin`.
 */
 void hashing_pin(uint8_t *pin, uint8_t *hashed_pin, uint8_t *salt) {
  /*Configuring Argon2 for PIN hashing*/
@@ -98,10 +71,8 @@ void hashing_pin(uint8_t *pin, uint8_t *hashed_pin, uint8_t *salt) {
  crypto_argon2_extras extras = {0};   /* Extra parameters unused */
 
  /*
-  Working memory for LZRW3a compression.
+  Working memory for Argon2i hashing.
   The allocation type is determined based on the ALLOCATION flag.
-  In future versions, this should be refactored to allow decisions at 
-  preprocessing time.
  */
  #if ALLOCATION == DYNAMIC
    void *work_area = ALLOCATE_WORK_AREA((size_t)BLOCK_AMOUNT * 1024);
@@ -110,8 +81,12 @@ void hashing_pin(uint8_t *pin, uint8_t *hashed_pin, uint8_t *salt) {
     crypto_wipe(salt, SALTSZ); //wiping salt, cause it`s not longer needed
     exit_with_error(ALLOCATION_ERROR,"Memory allocation failed");
    }
- #else
+ #elif ALLOCATION == STATIC_BSS
+   /* Static memory allocation on BSS segment */
    static uint8_t work_area[BLOCK_AMOUNT * 1024] __attribute__((aligned(8)));
+ #else
+   /* Static memory allocation on STACK segment */
+   uint8_t work_area[BLOCK_AMOUNT * 1024] __attribute__((aligned(8)));
  #endif
  crypto_argon2(hashed_pin, HASHSZ, work_area,config, inputs, extras);
  crypto_wipe(pin, PINSZ); //wiping PIN, cause it`s not longer needed
@@ -126,11 +101,11 @@ This function prompts the user to enter their PIN.
 The entered PIN is then XORed with key material stored in `client/secret.h`.
 If the PIN is correct, the client side will be authenticated. 
 If the PIN is incorrect, the communication will end.
+The function ensures that only users with the correct PIN can authenticate 
+successfully, allowing further communication to proceed.
 Parameters:
 - `plain_key`: A pointer to the key material that will be XORed with 
 the entered PIN. This key is used for authentication.
-The function ensures that only users with the correct PIN can authenticate 
-successfully, allowing further communication to proceed.
 */
 void pin_checker(uint8_t *plain_key) {
  char pin[NONSZ]; // bigger size for checking
@@ -159,7 +134,7 @@ void pin_checker(uint8_t *plain_key) {
     exit_with_error(WRONG_PIN,"You entered wrong PIN");
  }
 
- read_from_txt(KEY_PATH, secured_key, KEYSZ); //Reading key from txt
+ read_from_txt(KEY_PATH_CLIENT, secured_key, KEYSZ); //Reading key from txt
  read_from_txt(SALT_PATH, salt, SALTSZ); //Reading salt  from txt
 
  hashing_pin((uint8_t*)pin, hashed_pin, salt); // hashing with ARGON2

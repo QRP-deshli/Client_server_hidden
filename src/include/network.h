@@ -1,10 +1,11 @@
 // Client-server api              //
 // Network functions              //
-// Version 0.7.0                  //
+// Version 0.7.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 16.12.2024                     //
+// 20.12.2024                     //
 // Nikita Kuropatkin              //
+
 /* 
 This header file declares network TCP/IP functions
 for a client-server application. Function bodies
@@ -28,16 +29,6 @@ are in network.c.
     #include <sys/socket.h> 
     #include <sys/types.h>
 #endif
-
-/*
-Defining macro for address length
-(it is needed cause it has different types on WIN and LINUX)
-*/
-#ifdef _WIN32 
-    #define LEN int 
-#else
-    #define LEN socklen_t
-#endif 
 
 //////////////////////////////////////////
 /// Data Receiver ///
@@ -81,7 +72,6 @@ It takes the following parameter:
 - `sockfd` - the ID of the socket to be closed.  
 The program exits in case of an error.
 */
-
 void sockct_cls(const int sockfd);
 ///////////////////////////////////////////////////
 ///////////////////////////////////////////////////

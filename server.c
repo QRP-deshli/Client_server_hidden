@@ -1,9 +1,9 @@
 // Client-server api              //
 // Client side                    //
-// Version 0.7.0                  //
+// Version 0.7.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 16.12.2024                     //
+// 20.12.2024                     //
 // Nikita Kuropatkin              //
 
 /*
@@ -50,7 +50,13 @@ AEAD - authenticated encryption with additional data
 
 //////////Version history//////////
 /*
-Version 0.7.0:
+Version 0.7.5(20.12.2024) :
+# All macros, that user should see and maybe modify are now in parameters.
+# Added static memory allocation for PIN hashing with Argon2i
+# Added option for static memory allocation on stack
+# Refactor comments(added dates in history for example)
+# Added headers in Monocypher and LZRW3-A with info about modifications
+Version 0.7.0(16.12.2024):
 # Added DEMO version for static memory allocation in compress_decompress.c.
 # The long-term shared key is now read from a `.txt` file on the server 
   side as well.
@@ -65,14 +71,14 @@ Version 0.7.0:
 # Changed the structure of `padme_size` to be more lightweight, because 
   the `log2` function is now called during preprocessing.
 # Migrated header files (`.h`) to `src/include`.
-Version 0.6.5 :
+Version 0.6.5(06.12.2024) :
 # Added txt file-reader for reading key and salt on clients side
 # Added more macros and created new file for them macros.h
 # Added checking format for inputed PIN
 # Corrected mistake for metadata wiping(PIN wiping after hashing)
 # Usage of key-words const and static for clarification
 # Code beautified: comments and codes is less wider now  
-Version 0.6 :
+Version 0.6(29.11.2024) :
 # Added macros for sides(CLIENT and SERVER), 
   which makes code easier to understand
 # Linking mistake corrected 
@@ -85,17 +91,17 @@ Version 0.6 :
 # Added method for securing long-term shared key on client’s side 
   by PIN (using Argon2i)
 # Code beautified: more comments, more macros, irrelevant things deleted
-Version 0.5.5 :
+Version 0.5.5(19.11.2024) :
 # Added a demo for long-term shared key authentication
 # Corrected mistake with IP handling in memory
 # Cleaned up and beautified some functions
-Version 0.5 : 
+Version 0.5(14.11.2024) : 
 # Added and moved code and macros to additional files
 # Migrated from ChaCha20 encryption to AEAD stream encryption
 # Added help + port/ip input checks
 # Cleaned up code and added more comments
 # Added .bat files for easy start
-Version 0.4 : 
+Version 0.4(04.11.2024) : 
 # Added posibility to change default port and IP of server, 
   while running program
 # All functions for compatibility with different OSs are contained 
@@ -107,12 +113,12 @@ Version 0.4 :
 # Added new logic for printing errors, check config.c and error.h for 
   further explanation
 # Corrected mistake with shared key
-Version 0.3 : 
+Version 0.3(22.10.2024) : 
 # Migration of shared functions to shared.c
 # Correction of macros
 # Structured error returning code
 # Corrected problem with memory in number generation
-Version 0.2 :
+Version 0.2(05.10.2024) :
 # Added comments, explanations etc. 
 # Corrected mistake for generating random numbers in Windows 
 # Functions that needed different code on different platforms 
@@ -120,7 +126,7 @@ Version 0.2 :
 # Warnings cleared 
 # PADME padding with random numbers now(Mistake corrected) 
 # Dealing with buffer overflow added 
-Version 0.1 - basic functionality
+Version 0.1(11.09.2024) - basic functionality
 */
 #include <stdio.h>
 #include <string.h>
@@ -134,19 +140,7 @@ Version 0.1 - basic functionality
 #include "error.h"
 #include "parameters.h"
 #include "compress_decompress.h"
-#include "macros.h"
 #include "txt_reader.h"
-
-/*
-Backlog for the function listen() -  specifies the maximum number of 
-pending connections (connections that have been initiated by clients 
-but not yet accepted by the server using accept()) that the system 
-will queue for a socket.
-*/
-#define BACKLOG 3
-
-/*Path to a txt file of servers long-term shared key*/
-#define KEY_PATH "src/server/server_key.txt"
 
 /////////////////////
 /// Socket opener ///
@@ -433,7 +427,7 @@ static void key_exc_ell(int sockfd)
  kdf(reading_key, your_first_sk, their_pk, KEYSZ, SERVER);
 
  //Reading long-term shared key from txt
- read_from_txt(KEY_PATH, key_original, KEYSZ); 
+ read_from_txt(KEY_PATH_SERVER, key_original, KEYSZ); 
 
  // Compute keyed MAC of our reading key
  crypto_blake2b_keyed(mac_us, MACSZ, key_original, KEYSZ, reading_key, KEYSZ);

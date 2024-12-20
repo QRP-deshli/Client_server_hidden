@@ -1,9 +1,9 @@
 // Client-server api              //
 // File reader                    //
-// Version 0.7.0                  //
+// Version 0.7.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
-// 16.12.2024                     //
+// 20.12.2024                     //
 // Nikita Kuropatkin              //
 
 #include <stdio.h>
