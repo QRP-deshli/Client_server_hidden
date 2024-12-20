@@ -221,7 +221,7 @@ for PIN hashing and compressing and decompressing text.
 You can change the values of the options, but I don't think you'll need to,
 which is why they are here. (I do not recommend changing them.)
 */
-#define STATIC_BSS 0    // Memory will be allocated statically in the BSS section
+#define STATIC_BSS 0    // Memory will be allocated statically in the BSS 
 #define STATIC_STACK 1  // Memory will be allocated statically on the stack
 #define DYNAMIC 2       // Memory will be allocated dynamically on the heap
 

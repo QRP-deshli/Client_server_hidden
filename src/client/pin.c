@@ -73,6 +73,7 @@ void hashing_pin(uint8_t *pin, uint8_t *hashed_pin, uint8_t *salt) {
  /*
   Working memory for Argon2i hashing.
   The allocation type is determined based on the ALLOCATION flag.
+  Check parameters.h for more info about ALLOCATION macro
  */
  #if ALLOCATION == DYNAMIC
    void *work_area = ALLOCATE_WORK_AREA((size_t)BLOCK_AMOUNT * 1024);
