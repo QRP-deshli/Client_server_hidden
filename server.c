@@ -519,10 +519,11 @@ int main(int argc, char *argv[])
 
  key_exc_ell(connfd); //Entering "key exchange" stage
 
- sockct_cls(sockfd);
-
  printf("Program ended, press Enter:");
  getchar();
+
+ /*Moved after two previous lines for compatability with Pico*/
+ sockct_cls(sockfd); 
  return 0;
 }
 ////////////////////////////////

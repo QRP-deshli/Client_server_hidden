@@ -1,5 +1,5 @@
 // Client-server api              //
-// Additional functions           //
+// Parameters                     //
 // Version 0.7.5                  //
 // Bachelor`s work project        //
 // Technical University of Kosice //
@@ -122,7 +122,6 @@ In use: compress_decompress.c, pin.c.
 Defines the memory allocation type for PIN hashing and text compression. 
 Options: STATIC_BSS, STATIC_STACK, DYNAMIC. Adjusting the BLOCK_AMOUNT 
 macro is necessary when using STATIC_STACK due to stack size limits. 
-Changes require reapplying the PIN using pin_changer.exe.
 */
 #define ALLOCATION DYNAMIC  
 
@@ -161,6 +160,14 @@ is 100 MB with 3 iterations. Adjusting this value requires
 consideration of system RAM and Argon2 input parameters.
 */
 #define BLOCK_AMOUNT 100000
+
+/*
+In use: pin.c.
+Defines the number of iterations for Argon2i. The default value 
+is 100 MB with 3 iterations. Adjusting this requires considering system RAM 
+and Argon2 input parameters.
+*/
+#define ITERATIONS 3
 
 /*
 In use: pin.c, pin_changer.c.
@@ -283,6 +290,14 @@ which is why the macro below is mapped to KEYSZ.
 Do not change this value!
 */
 #define HASHSZ KEYSZ 
+
+/*
+In use: pin.c.
+Defines the number of threads (parallelism) for Argon2i.  
+Since Monocypher uses a single-threaded approach, 
+this value does not need to be changed.
+*/
+#define LANSES 1
 
 /*
 In use: client.c, server.c

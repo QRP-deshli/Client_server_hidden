@@ -59,8 +59,8 @@ void hashing_pin(uint8_t *pin, uint8_t *hashed_pin, uint8_t *salt) {
  crypto_argon2_config config = {
     .algorithm = CRYPTO_ARGON2_I, /* Variant of Argon*/
     .nb_blocks = BLOCK_AMOUNT,    /* The number of blocks for work area*/
-    .nb_passes = 3,               /* 3 iterations*/
-    .nb_lanes  = 1                /* Single-threaded*/
+    .nb_passes = ITERATIONS,      /* 3 iterations*/
+    .nb_lanes  = LANSES           /* Threads */
  };
  crypto_argon2_inputs inputs = {
     .pass      = pin,                   /* User PIN*/
