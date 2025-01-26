@@ -29,7 +29,7 @@ void read_win_lin(const int sockfd, uint8_t *msg, const uint32_t size)
         exit_with_error(ERROR_RECEIVING_DATA, "Recieving failed");
     }
  #else
-    if (read(sockfd, msg, size) == -1) {
+    if (read(sockfd, msg, size) == RETURN_ERROR) {
         exit_with_error(ERROR_RECEIVING_DATA, "Recieving failed");
     }
  #endif
@@ -56,7 +56,7 @@ void write_win_lin(const int sockfd, uint8_t *msg, const uint32_t size)
         exit_with_error(ERROR_SENDING_DATA, "Writing failed");
     }
  #else
-    if (write(sockfd, msg, size) == -1) {
+    if (write(sockfd, msg, size) == RETURN_ERROR) {
         exit_with_error(ERROR_SENDING_DATA, "Writing failed");
     }
  #endif

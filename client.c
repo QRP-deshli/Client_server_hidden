@@ -168,12 +168,13 @@ static int sockct_opn(int port, char *ip)
  servaddr.sin_port = htons(port);
 
  // Connect the client socket to the server socket
- if (connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) != 0) {
-     sockct_cls(sockfd);
-     exit_with_error(ERROR_SOCKET_CREATION, "Connection with the server failed");
-    } 
+ if (connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) == RETURN_ERROR) 
+ {
+    sockct_cls(sockfd);
+    exit_with_error(ERROR_SOCKET_CREATION, "Connection with the server failed");
+ } 
  else {
-     printf("Connected to the server..\n");
+    printf("Connected to the server..\n");
  }
  return sockfd;
 }
@@ -287,7 +288,7 @@ static void chat(uint8_t* writing_key, uint8_t* reading_key, int sockfd)
     // Send encrypted message to server
     write_win_lin(sockfd, (uint8_t*)buff, compr_size);
 
-    if (exiting("Client", plain) == 1) break; //Checks for stop-word
+    if (exiting("Client", plain) == YES) break; //Checks for stop-word
 		
     // Clear buffers 
     memset(buff, 0, MAX);
@@ -309,7 +310,7 @@ static void chat(uint8_t* writing_key, uint8_t* reading_key, int sockfd)
     read_win_lin(sockfd, (uint8_t*)buff, compr_size);
 
     // Decrypt and authenticate the message from the server
-    if (crypto_aead_read(&ctx_thm, (uint8_t*)compr, mac_thm, NULL, 0,(uint8_t*)buff, compr_size) == -1) 
+    if (crypto_aead_read(&ctx_thm, (uint8_t*)compr, mac_thm, NULL, 0,(uint8_t*)buff, compr_size) == RETURN_ERROR) 
     {
         /* If the message was altered during transmission*/
         exit_with_error(MESSAGE_ALTERED, "Last received message was altered, exiting"); 
@@ -327,7 +328,7 @@ static void chat(uint8_t* writing_key, uint8_t* reading_key, int sockfd)
     }
     printf("    From server: %s", plain);
 
-    if (exiting("Server", plain) == 1) break; //Checks for stop-word
+    if (exiting("Server", plain) == YES) break; //Checks for stop-word
 
     crypto_wipe(plain, TEXT_MAX); //Clear plain
 
@@ -406,7 +407,7 @@ static void key_exc_ell(int sockfd)
  unpad_array(mac_thm, padded_mac_thm, MACSZ); 
 
  // Checking if server is legit(if it owns shared SK)
- if (crypto_verify16(mac_us, mac_thm) == -1) {
+ if (crypto_verify16(mac_us, mac_thm) == RETURN_ERROR) {
      exit_with_error(UNEQUAL_MAC,"Other side isn`t legit, aborting");
  }
  
@@ -462,7 +463,7 @@ int main(int argc, char *argv[])
     if (argv[1][0] != '\0') { // Port/Help argument is not empty
 
         /*Print help*/
-        if (strcmp(argv[1],"/h") == 0) help_print(CLIENT,PORT,IP,MAX);
+        if (strcmp(argv[1],"/h") == OK) help_print(CLIENT,PORT,IP,MAX);
             
         /*Changing var value to user-defined port*/
         port = atoi(argv[1]); 

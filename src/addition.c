@@ -44,11 +44,11 @@ closing the communication session as normal.
 int exiting (const char *side, const char *msg)
 {
 // Exit the loop if the message contains stop-word
- if (strncmp(msg,EXIT,strlen(EXIT)) == 0) {
+ if (strncmp(msg,EXIT,strlen(EXIT)) == OK) {
     printf("%s exited...\n",side);
-    return 1;
+    return YES;
  }
- else return 0;
+ else return NO;
 }
 ///////////////////////////
 ///////////////////////////

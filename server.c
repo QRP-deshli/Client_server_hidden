@@ -174,7 +174,7 @@ static int sockct_opn(int *sockfd,int port)
  servaddr.sin_port = htons(port);
 
  // Bind the socket(with error handling)
- if (bind(*sockfd, (SA*)&servaddr, sizeof(servaddr)) == -1) {
+ if (bind(*sockfd, (SA*)&servaddr, sizeof(servaddr)) == RETURN_ERROR) {
     sockct_cls(*sockfd);
     exit_with_error(ERROR_BINDING, "Socket bind failed");
  }
@@ -183,7 +183,7 @@ static int sockct_opn(int *sockfd,int port)
  }
 
  // Listen for incoming connections
- if (listen(*sockfd, BACKLOG) == -1) {// Checking if listening failed
+ if (listen(*sockfd, BACKLOG) == RETURN_ERROR) {// Checking if listening failed
     sockct_cls(*sockfd);
     exit_with_error(ERROR_SOCKET_LISTENING, "Listen failed");
  }
@@ -296,7 +296,8 @@ static void chat(uint8_t* reading_key, uint8_t* writing_key, int sockfd)
     read_win_lin(sockfd, (uint8_t*)buff, compr_size);
         
     /*Decrypt and authenticate the message from the server*/
-    if (crypto_aead_read(&ctx_thm, (uint8_t*)compr, mac_thm, NULL, 0,(uint8_t*)buff, compr_size) == -1)
+    if (crypto_aead_read(&ctx_thm, (uint8_t*)compr, mac_thm, NULL, 0,
+                        (uint8_t*)buff, compr_size) == RETURN_ERROR)
     {
         /*If the message was altered during transmission*/
         exit_with_error(MESSAGE_ALTERED, "Last received message was altered, exiting"); 
@@ -317,7 +318,7 @@ static void chat(uint8_t* reading_key, uint8_t* writing_key, int sockfd)
     printf("    From client: %s", plain);
         
     // Check for stop-word
-    if (exiting("Client", plain) == 1) break; 
+    if (exiting("Client", plain) == YES) break; 
 
     // Clear buffers
     memset(buff, 0, MAX);
@@ -344,7 +345,8 @@ static void chat(uint8_t* reading_key, uint8_t* writing_key, int sockfd)
     compress_text((uint8_t*)plain, MAX, (uint8_t*)compr, &compr_size);
 
     // Encrypt compressed message and generate MAC for it
-    crypto_aead_write(&ctx_us, (uint8_t*)buff, mac_us,NULL, 0,(uint8_t*)compr, compr_size);
+    crypto_aead_write(&ctx_us, (uint8_t*)buff, mac_us,
+                      NULL, 0, (uint8_t*)compr, compr_size);
 
     /*Padding our MAC*/
     pad_array(mac_us, padded_mac_us, MACSZ, pad_size_mac);
@@ -359,7 +361,7 @@ static void chat(uint8_t* reading_key, uint8_t* writing_key, int sockfd)
     write_win_lin(sockfd, (uint8_t*)buff, compr_size);
 
     // Check for exit command (again, to exit the loop)
-    if (exiting("Server", plain) == 1) break; //checks for stop-word
+    if (exiting("Server", plain) == YES) break; //checks for stop-word
 
     crypto_wipe(plain, MAX);// clear plain
     }
@@ -464,7 +466,7 @@ static void key_exc_ell(int sockfd)
  unpad_array(mac_thm, padded_mac_thm, MACSZ); 
 
  // Checking if server is legit(if it owns shared SK)
- if (crypto_verify16(mac_us, mac_thm) == -1) {
+ if (crypto_verify16(mac_us, mac_thm) == RETURN_ERROR) {
     exit_with_error(UNEQUAL_MAC,"Other side isn`t legit, aborting");
  }
  
@@ -490,7 +492,7 @@ int main(int argc, char *argv[])
  if (argc == 2 && argv[1][0] != '\0') { 
 
     /*Print help*/
-    if (strcmp(argv[1],"/h") == 0) help_print(SERVER,PORT,NULL,MAX); 
+    if (strcmp(argv[1],"/h") == OK) help_print(SERVER,PORT,NULL,MAX); 
 
     port =  atoi(argv[1]); //Changing var value to user-defined port
     /*Checking port*/

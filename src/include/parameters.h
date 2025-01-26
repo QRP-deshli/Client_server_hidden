@@ -233,9 +233,11 @@ which is why they are here. (I do not recommend changing them.)
 #define DYNAMIC 2       // Memory will be allocated dynamically on the heap
 
 /*
-In use: here (upper segment -> macro DEBUG), config.c
-Two macros define DEBUG macro options. Again, you don’t need to change
-these, but you can. (I do not recommend changing them.)
+In use: here (upper segment -> macro DEBUG), config.c, client.c, addition.c
+Two macros define DEBUG macro options. 
+Also two macros define whether a certain side has ended communication
+Again, you don’t need to change these, but you can. 
+(I do not recommend changing them.)
 */
 #define YES 1
 #define NO 0
@@ -247,6 +249,13 @@ these, but you can. (I do not recommend changing them.)
 */
 #define OUTPUT 1
 #define ERR 0
+
+/*
+This macro defines an error that can be returned by any function in this code.  
+It is used almost everywhere. If you see this macro, it means the function  
+execution ended with an error.
+*/
+#define RETURN_ERROR -1
 
 /*
 In use: pin.c, compress_decompress.c
