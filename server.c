@@ -432,20 +432,10 @@ static void key_exc_ell(int sockfd)
  // Compute keyed MAC of our reading key
  crypto_blake2b_keyed(mac_us, MACSZ, key_original, KEYSZ, reading_key, KEYSZ);
 
- /*Get padded MAC of their writing key(authentication of the sides)*/
- read_win_lin(sockfd, padded_mac_thm, pad_size_mac);
- /*Un-pad received MAC of other side*/
- unpad_array(mac_thm, padded_mac_thm, MACSZ); 
-
  /*Padding our MAC*/
  pad_array(mac_us, padded_mac_us, MACSZ, pad_size_mac);
  /*Send padded MAC of our reading key(authentication of the sides)*/
  write_win_lin(sockfd, padded_mac_us, pad_size_mac);
-
- // Checking if server is legit(if it owns shared SK)
- if (crypto_verify16(mac_us, mac_thm) == -1) {
-    exit_with_error(UNEQUAL_MAC,"Other side isn`t legit, aborting");
- }
 
  /*
  Generating second shared secret - our writing key, their reading key
@@ -472,11 +462,6 @@ static void key_exc_ell(int sockfd)
  read_win_lin(sockfd, padded_mac_thm, pad_size_mac);
  /*Un-pad received MAC of other side*/
  unpad_array(mac_thm, padded_mac_thm, MACSZ); 
-
- /*Padding our MAC*/
- pad_array(mac_us, padded_mac_us, MACSZ, pad_size_mac);
- /*Send padded MAC of our writing key(authentication of the sides)*/
- write_win_lin(sockfd, padded_mac_us, pad_size_mac);
 
  // Checking if server is legit(if it owns shared SK)
  if (crypto_verify16(mac_us, mac_thm) == -1) {

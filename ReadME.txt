@@ -2,7 +2,7 @@
 Program pre sifrovanu komunikaciu klient-server so steganografickou podporou
 (Elligator 2 a PADME)
 --------------------------------------------------------------------------------
-2024-16-12, v.0.7.0, Nikita Kuropatkin KEMT FEI TUKE
+2024-28-12, v.0.7.5, Nikita Kuropatkin KEMT FEI TUKE
 
 Zakladny ciel programu:
 ---------------------------
@@ -69,7 +69,7 @@ sprav a skryje metadata spojene s komunikaciou.
 Doplnkove:
 LZRW3-A: Algoritmus bezstratovej kompresie, navrhnuty Rossom Williamsom.
 
-Algoritmus praci programu:
+Algoritmus prace programu:
 ---------------------------
 (0) Server vlastni dlhodobo zdielany kluc (SK), klient ma jeho verziu, 
 zabezpecenu pomocou PIN-kodu.
