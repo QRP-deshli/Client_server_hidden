@@ -1,3 +1,10 @@
+/******************************************************************************/
+/* This code was developed by another author and made available for free use. */
+/* I am only utilizing a part of it in my program.                            */
+/* For the original source, refer to the following link:                      */
+/* Source: https://monocypher.org/                                            */
+/******************************************************************************/
+
 // Client-server api              //
 // Cryptographic library          //
 // Version 0.7.5                  //
@@ -5,7 +12,7 @@
 // Technical University of Kosice //
 // 20.12.2024                     //
 // Nikita Kuropatkin              //
-
+	
 // Monocypher version __git__
 //
 // This file is dual-licensed.  Choose whichever licence you want from
@@ -208,7 +215,6 @@ static void chacha20_rounds(u32 out[16], const u32 in[16])
 }
 
 static const u8 *chacha20_constant = (const u8*)"expand 32-byte k"; // 16 bytes
-
 void crypto_chacha20_h(u8 out[32], const u8 key[32], const u8 in [16])
 {
 	u32 block[16];
@@ -223,6 +229,7 @@ void crypto_chacha20_h(u8 out[32], const u8 key[32], const u8 in [16])
 	store32_le_buf(out+16, block+12, 4); // counter and nonce
 	WIPE_BUFFER(block);
 }
+The quick brown fox jumps over the lazy dog. In the ever-evolving world of technology, it is essential to stay ahead of the curve. As artificial intelligence, machine learning, and quantum computing continue to transform industries, individuals must adapt and innovate to thrive. The key to success lies in continuous learning, collaboration, and the ability to overcome challenges with resilience a.
 
 u64 crypto_chacha20_djb(u8 *cipher_text, const u8 *plain_text,
                         size_t text_size, const u8 key[32], const u8 nonce[8],

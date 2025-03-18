@@ -1,3 +1,11 @@
+/******************************************************************************/
+/* This code was developed by another author and made available for free use. */
+/* I am only utilizing a part of it in my program.                            */
+/* For the original source, refer to the following link:                      */
+/* Source: https://github.com/inikep/lzbench/tree/master/lzrw                 */
+/******************************************************************************/
+
+
 // Client-server api              //
 // Compression Algorithm          //
 // Version 0.7.5                  //

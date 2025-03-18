@@ -122,8 +122,9 @@ void kdf(uint8_t *shared_key, const uint8_t *your_sk, const uint8_t *their_pk, c
 {
  uint8_t shared_secret[keysz]; // Raw shared key
  uint8_t your_pk[keysz]; // Your PK
+
  // Compute PK(again) but without inverse mapping
- crypto_x25519_dirty_small(your_pk, your_sk);
+ crypto_x25519_dirty_fast(your_pk, your_sk);
         
  // Compute shared secret
  crypto_x25519(shared_secret, your_sk, their_pk);
