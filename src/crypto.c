@@ -184,7 +184,7 @@ void key_hidden(uint8_t *your_sk, uint8_t *your_pk, const int keysz) {
  */
  while (1) {
  random_num(your_sk, keysz);
- crypto_x25519_dirty_small(your_pk, your_sk);
+ crypto_x25519_dirty_fast(your_pk, your_sk);
  if (crypto_elligator_rev(your_pk, your_pk, tweak) == OK)
     break;
  }
