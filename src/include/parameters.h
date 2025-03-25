@@ -137,7 +137,7 @@ In use: config.c.
 Enables or disables error printing. Set to NO to disable error 
 printing, or YES to enable it.
 */
-#define DEBUG NO 
+#define DEBUG YES 
 
 /*
 In use: pin.c.

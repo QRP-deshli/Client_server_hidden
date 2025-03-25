@@ -61,13 +61,14 @@ Parameters:
 - `shared_key`: A pointer to the buffer where the derived shared key will be 
   stored.
 - `your_sk`: A pointer to your private key.
+- `your_pk`: A pointer to your public key.
 - `their_pk`: A pointer to the other party's public key.
 - `keysz`: The size of the keys.
 - `side`: A switch to define the specific order of the keys for either the 
   server or client side. This parameter determines the role 
   (server or client) of the party calling the function.
 */
-void kdf(uint8_t *shared_key, const uint8_t *your_sk, const uint8_t *their_pk, const int keysz, const int side);
+void kdf(uint8_t *shared_key, const uint8_t *your_sk, const uint8_t *your_pk, const uint8_t *their_pk, const int keysz, const int side);
 ///////////////////////////////
 ///////////////////////////////
 
@@ -88,11 +89,12 @@ Parameters:
   will be stored.
 - `your_pk`: A pointer to the buffer where the derived public key (PK) 
   will be stored.
+- `hidden`: A pointer to the buffer where the hidden public key
+  will be stored.
 - `keysz`: The size of the keys (both SK and PK).
 */
-void key_hidden(uint8_t *your_sk, uint8_t *your_pk, const int keysz);
+void key_hidden(uint8_t *your_sk, uint8_t *your_pk, uint8_t *hidden, const int keysz);
 /////////////////////////////////////////
 /////////////////////////////////////////
-
 
 #endif

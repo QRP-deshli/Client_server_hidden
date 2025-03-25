@@ -352,7 +352,8 @@ static void key_exc_ell(int sockfd)
  uint8_t their_second_pk[KEYSZ]; //their second public key
  uint8_t writing_key[KEYSZ]; //our writing key(their reading key)
  uint8_t reading_key[KEYSZ]; //our reading key(their writing key)
- uint8_t hidden[KEYSZ]; //our PK hidden with inverse mapping
+ uint8_t our_hidden[KEYSZ]; //our PK hidden with inverse mapping
+ uint8_t their_hidden[KEYSZ]; //their PK hidden with inverse mapping
  uint8_t plain_key[KEYSZ]; //key for authentication of your side
     
  // Variables for MAC of sides
@@ -374,10 +375,10 @@ static void key_exc_ell(int sockfd)
  */
 
  /*Generate SK and hidden PK*/
- key_hidden(your_sk, your_pk, KEYSZ);
+ key_hidden(your_sk, your_pk, our_hidden, KEYSZ);
 
  // Padding of hidden PK
- pad_array(your_pk, pad_your_pk, KEYSZ, pad_size_key);
+ pad_array(our_hidden, pad_your_pk, KEYSZ, pad_size_key);
 
  // Sending/receiving PK(hidden and padded) (key exchange)
  write_win_lin(sockfd, pad_your_pk, pad_size_key);
@@ -389,11 +390,11 @@ static void key_exc_ell(int sockfd)
  Return to the actual key-size and mapping scalar 
  to actual curve point(getting normal PK)
  */
- unpad_array(hidden, pad_hidden, KEYSZ);
- crypto_elligator_map(their_first_pk, hidden);
+ unpad_array(their_hidden, pad_hidden, KEYSZ);
+ crypto_elligator_map(their_first_pk, their_hidden);
 
  // Compute our writing key(their reading key)
- kdf(writing_key, your_sk, their_first_pk, KEYSZ, CLIENT);
+ kdf(writing_key, your_sk, your_pk, their_first_pk, KEYSZ, CLIENT);
 
  // Asking and checking PIN for SK from user
  pin_checker(plain_key);
@@ -422,11 +423,11 @@ static void key_exc_ell(int sockfd)
  Return to the actual key-size and mapping scalar 
  to actual curve point(getting normal PK)
  */
- unpad_array(hidden, pad_hidden, KEYSZ);
- crypto_elligator_map(their_second_pk, hidden);
+ unpad_array(their_hidden, pad_hidden, KEYSZ);
+ crypto_elligator_map(their_second_pk, their_hidden);
 
  // Compute our reading key(their writing key)
- kdf(reading_key, your_sk, their_second_pk, KEYSZ, CLIENT);
+ kdf(reading_key, your_sk, your_pk, their_second_pk, KEYSZ, CLIENT);
 
  // Compute keyed MAC of our reading key
  crypto_blake2b_keyed(mac_us, MACSZ, plain_key, KEYSZ, reading_key, KEYSZ);

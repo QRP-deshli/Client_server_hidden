@@ -112,19 +112,16 @@ Parameters:
 - `shared_key`: A pointer to the buffer where the derived shared key will be 
   stored.
 - `your_sk`: A pointer to your private key.
+- `your_pk`: A pointer to your public key.
 - `their_pk`: A pointer to the other party's public key.
 - `keysz`: The size of the keys.
 - `side`: A switch to define the specific order of the keys for either the 
   server or client side. This parameter determines the role 
   (server or client) of the party calling the function.
 */
-void kdf(uint8_t *shared_key, const uint8_t *your_sk, const uint8_t *their_pk, const int keysz, const int side)
+void kdf(uint8_t *shared_key, const uint8_t *your_sk, const uint8_t *your_pk, const uint8_t *their_pk, const int keysz, const int side)
 {
  uint8_t shared_secret[keysz]; // Raw shared key
- uint8_t your_pk[keysz]; // Your PK
-
- // Compute PK(again) but without inverse mapping
- crypto_x25519_dirty_fast(your_pk, your_sk);
         
  // Compute shared secret
  crypto_x25519(shared_secret, your_sk, their_pk);
@@ -172,9 +169,11 @@ Parameters:
   will be stored.
 - `your_pk`: A pointer to the buffer where the derived public key (PK) 
   will be stored.
+- `hidden`: A pointer to the buffer where the hidden public key
+  will be stored.
 - `keysz`: The size of the keys (both SK and PK).
 */
-void key_hidden(uint8_t *your_sk, uint8_t *your_pk, const int keysz) {
+void key_hidden(uint8_t *your_sk, uint8_t *your_pk, uint8_t *hidden, const int keysz) {
  uint8_t tweak; // Tweak for elligator`s inverse map
  random_num(&tweak, 1); // Tweak generation
 
@@ -185,9 +184,10 @@ void key_hidden(uint8_t *your_sk, uint8_t *your_pk, const int keysz) {
  while (1) {
  random_num(your_sk, keysz);
  crypto_x25519_dirty_fast(your_pk, your_sk);
- if (crypto_elligator_rev(your_pk, your_pk, tweak) == OK)
+ if (crypto_elligator_rev(hidden, your_pk, tweak) == OK)
     break;
  }
 }
 /////////////////////////////////////////
 /////////////////////////////////////////
+
