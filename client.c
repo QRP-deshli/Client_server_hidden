@@ -481,7 +481,7 @@ int main(int argc, char *argv[])
         }
             
         strcpy(ip,argv[2]); //Copy for checking format of entered IP
-        ip_check(argv[2]); //Check of ip
+        ip_check(ip); //Check of ip
         strcpy(ip,argv[2]); //Copy valid ip
         }
     }
